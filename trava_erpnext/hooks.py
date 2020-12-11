@@ -10,7 +10,7 @@ app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "belyerin@ya.ru"
 app_license = "MIT"
-fixtures = ["Custom Field", "Custom Script", "Property Setter", "Print Format", "Report", "Workflow", "Workflow State", "Workflow Action"]
+fixtures = ['Report', 'Role Profile', 'Role', 'Custom Field', 'Custom Script', 'Property Setter', 'Workflow', 'Workflow State', 'Workflow Action']
 
 # Includes in <head>
 # ------------------

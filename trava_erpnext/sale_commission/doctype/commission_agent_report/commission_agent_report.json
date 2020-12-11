@@ -19,6 +19,7 @@
   "date_incoming_report",
   "column_break1",
   "amended_from",
+  "creation_date",
   "period",
   "agreement",
   "tax_id",
@@ -59,13 +60,6 @@
   "loyalty_points_redemption",
   "loyalty_points",
   "loyalty_amount",
-  "section_break_48",
-  "coupon_code",
-  "apply_discount_on",
-  "base_discount_amount",
-  "column_break_50",
-  "additional_discount_percentage",
-  "discount_amount",
   "totals",
   "base_grand_total",
   "base_rounding_adjustment",
@@ -97,6 +91,8 @@
   "group_same_items",
   "section_break_78",
   "status",
+  "per_billed",
+  "billing_status",
   "sales_team_section_break",
   "sales_partner",
   "column_break7",
@@ -336,7 +332,7 @@
    "label": "Items",
    "oldfieldname": "sales_order_details",
    "oldfieldtype": "Table",
-   "options": "Sales Order Item",
+   "options": "Commission Agent Report Item",
    "reqd": 1
   },
   {
@@ -574,66 +570,6 @@
    "label": "Loyalty Amount",
    "print_hide": 1,
    "read_only": 1
-  },
-  {
-   "collapsible": 1,
-   "collapsible_depends_on": "discount_amount",
-   "fieldname": "section_break_48",
-   "fieldtype": "Section Break",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Additional Discount and Coupon Code"
-  },
-  {
-   "fieldname": "coupon_code",
-   "fieldtype": "Link",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Coupon Code",
-   "options": "Coupon Code"
-  },
-  {
-   "default": "Grand Total",
-   "fieldname": "apply_discount_on",
-   "fieldtype": "Select",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Apply Additional Discount On",
-   "options": "\nGrand Total\nNet Total",
-   "print_hide": 1
-  },
-  {
-   "fieldname": "base_discount_amount",
-   "fieldtype": "Currency",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Additional Discount Amount (Company Currency)",
-   "options": "Company:company:default_currency",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_50",
-   "fieldtype": "Column Break",
-   "hide_days": 1,
-   "hide_seconds": 1
-  },
-  {
-   "fieldname": "additional_discount_percentage",
-   "fieldtype": "Float",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Additional Discount Percentage",
-   "print_hide": 1
-  },
-  {
-   "fieldname": "discount_amount",
-   "fieldtype": "Currency",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Additional Discount Amount",
-   "options": "currency",
-   "print_hide": 1
   },
   {
    "fieldname": "totals",
@@ -1168,12 +1104,43 @@
    "options": "Agreement",
    "print_hide": 1,
    "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "creation_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Creation Date",
+   "no_copy": 1,
+   "search_index": 1
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "description": "% of materials billed against this Sales Order",
+   "fieldname": "per_billed",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "% Amount Billed",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
+  },
+  {
+   "fieldname": "billing_status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "in_standard_filter": 1,
+   "label": "Billing Status",
+   "no_copy": 1,
+   "options": "Not Billed\nFully Billed\nPartly Billed\nClosed",
+   "print_hide": 1
   }
  ],
  "icon": "fa fa-file-text",
  "is_submittable": 1,
  "links": [],
- "modified": "2020-11-13 14:03:17.112468",
+ "modified": "2020-12-11 17:24:03.361561",
  "modified_by": "Administrator",
  "module": "Sale Commission",
  "name": "Commission Agent Report",
@@ -1242,7 +1209,7 @@
    "write": 1
   }
  ],
- "search_fields": "status, customer,customer_name, company",
+ "search_fields": "status, creation_date, customer,customer_name, company",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
