@@ -15,6 +15,7 @@
   "customer",
   "customer_name",
   "company",
+  "transaction_date",
   "incoming_number",
   "date_incoming_report",
   "column_break1",
@@ -23,6 +24,16 @@
   "period",
   "agreement",
   "tax_id",
+  "contact_info",
+  "customer_address",
+  "address_display",
+  "contact_person",
+  "contact_display",
+  "contact_phone",
+  "contact_mobile",
+  "contact_email",
+  "company_address",
+  "company_address_display",
   "currency_and_price_list",
   "currency",
   "conversion_rate",
@@ -60,6 +71,12 @@
   "loyalty_points_redemption",
   "loyalty_points",
   "loyalty_amount",
+  "commission",
+  "base_commission_agents_remuneration",
+  "base_amount_principal",
+  "column_break_3",
+  "commission_agents_remuneration",
+  "amount_principal",
   "totals",
   "base_grand_total",
   "base_rounding_adjustment",
@@ -224,6 +241,21 @@
    "label": "Tax Id",
    "read_only": 1,
    "width": "100px"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "contact_info",
+   "fieldtype": "Section Break",
+   "label": "Address and Contact",
+   "options": "fa fa-bullhorn"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "customer_address",
+   "fieldtype": "Link",
+   "label": "Customer Address",
+   "options": "Address",
+   "print_hide": 1
   },
   {
    "collapsible": 1,
@@ -893,7 +925,7 @@
    "fieldtype": "Section Break",
    "hide_days": 1,
    "hide_seconds": 1,
-   "label": "Billing and Delivery Status",
+   "label": "Billing  Status",
    "oldfieldtype": "Column Break",
    "print_hide": 1,
    "width": "50%"
@@ -1135,12 +1167,125 @@
    "no_copy": 1,
    "options": "Not Billed\nFully Billed\nPartly Billed\nClosed",
    "print_hide": 1
+  },
+  {
+   "fieldname": "commission",
+   "fieldtype": "Section Break",
+   "options": "fa fa-money",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "commission_agents_remuneration",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Commission agent's remuneration",
+   "options": "currency",
+   "read_only": 1,
+   "width": "150px"
+  },
+  {
+   "fieldname": "amount_principal",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount principal",
+   "options": "currency",
+   "read_only": 1,
+   "width": "150px"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break",
+   "print_hide": 1,
+   "width": "50%"
+  },
+  {
+   "fieldname": "base_commission_agents_remuneration",
+   "fieldtype": "Currency",
+   "label": "Commission agent's remuneration (Company Currency)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "150px"
+  },
+  {
+   "fieldname": "base_amount_principal",
+   "fieldtype": "Currency",
+   "label": "Amount principal (Company Currency)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "150px"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Link",
+   "label": "Contact Person",
+   "options": "Contact",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "contact_display",
+   "fieldtype": "Small Text",
+   "in_global_search": 1,
+   "label": "Contact",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contact_mobile",
+   "fieldtype": "Small Text",
+   "label": "Mobile No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Contact Email",
+   "options": "Email",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "company_address",
+   "fieldtype": "Link",
+   "label": "Company Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "company_address_display",
+   "fieldtype": "Small Text",
+   "label": "Company Address",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "transaction_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Date",
+   "no_copy": 1,
+   "reqd": 1,
+   "search_index": 1,
+   "width": "160px"
   }
  ],
  "icon": "fa fa-file-text",
  "is_submittable": 1,
  "links": [],
- "modified": "2020-12-11 17:24:03.361561",
+ "modified": "2020-12-20 13:21:00.033104",
  "modified_by": "Administrator",
  "module": "Sale Commission",
  "name": "Commission Agent Report",

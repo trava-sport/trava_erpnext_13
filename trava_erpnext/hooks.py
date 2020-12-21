@@ -38,6 +38,8 @@ fixtures = ['Report', 'Role Profile', 'Role', 'Custom Field', 'Custom Script', '
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
+doctype_js = {"Sales Invoice" : "public/js/selling/sales_invoice/sales_invoice.js"}
+#doctype_js = {"Sales Invoice" : "public/js/sales_invoice/commission_sales.js"}
 
 # Home Pages
 # ----------

@@ -1,5 +1,8 @@
 // Copyright (c) 2020, trava and contributors
 // For license information, please see license.txt
+{% include 'trava_erpnext/public/js/selling/commission_sales/commission_sales.js' %};
+
+
 frappe.provide("trava_erpnext.selling");
 
 frappe.ui.form.on('Commission Agent Report', {
@@ -65,10 +68,10 @@ frappe.ui.form.on('Commission Agent Report', {
 				}
 			}
 		});
-	}
+	},
 });
 
-trava_erpnext.selling.SalesCommissionController = erpnext.TransactionController.extend({
+trava_erpnext.selling.SalesCommissionController = trava_erpnext.selling.SellingCommission.extend({
 	onload: function(doc, dt, dn) {
 		this._super();
 	},
@@ -76,20 +79,136 @@ trava_erpnext.selling.SalesCommissionController = erpnext.TransactionController.
 	refresh: function(doc, dt, dn) {
 		var me = this;
 		this._super();
-	},
-	
-	price_list_rate: function(doc, cdt, cdn) {
-		var item = frappe.get_doc(cdt, cdn);
-		frappe.model.round_floats_in(item, ["price_list_rate", "discount_percentage"]);
 
-		// check if child doctype is Sales Order Item/Qutation Item and calculate the rate
-		if(in_list(["Commission Agent Report Item", "Sales Order Item"]), cdt)
-			this.apply_pricing_rule_on_item(item);
-		else
-			item.rate = flt(item.price_list_rate * (1 - item.discount_percentage / 100.0),
-				precision("rate", item));
+		if (doc.docstatus==1) {
 
-		this.calculate_taxes_and_totals();
+			if(this.frm.has_perm("submit")) {
+				if(doc.status === 'On Hold') {
+				   // un-hold
+				   this.frm.add_custom_button(__('Resume'), function() {
+					   me.frm.cscript.update_status('Resume', 'Draft')
+				   }, __("Status"));
+
+				   if(flt(doc.per_delivered, 6) < 100 || flt(doc.per_billed) < 100) {
+					   // close
+					   this.frm.add_custom_button(__('Close'), () => this.close_sales_order(), __("Status"))
+				   }
+				}
+			   	else if(doc.status === 'Closed') {
+				   // un-close
+				   this.frm.add_custom_button(__('Re-open'), function() {
+					   me.frm.cscript.update_status('Re-open', 'Draft')
+				   }, __("Status"));
+			   }
+			}
+			if(doc.status !== 'Closed') {
+				if(doc.status !== 'On Hold') {
+					if (this.frm.has_perm("submit")) {
+						if(flt(doc.per_billed) < 100) {
+							// hold
+							this.frm.add_custom_button(__('Hold'), () => this.hold_sales_order(), __("Status"))
+							// close
+							this.frm.add_custom_button(__('Close'), () => this.close_sales_order(), __("Status"))
+						}
+					}
+
+					const order_is_a_sale = ["Sales", "Shopping Cart"].indexOf(doc.order_type) !== -1;
+					const order_is_maintenance = ["Maintenance"].indexOf(doc.order_type) !== -1;
+					// order type has been customised then show all the action buttons
+					const order_is_a_custom_sale = ["Sales", "Shopping Cart", "Maintenance"].indexOf(doc.order_type) === -1;
+
+					// sales invoice
+					if(flt(doc.per_billed, 6) < 100) {
+						this.frm.add_custom_button(__('Sales Invoice'), () => me.make_sales_invoice(), __('Create'));
+					}
+
+					// project
+					if(flt(doc.per_delivered, 2) < 100) {
+							this.frm.add_custom_button(__('Project'), () => this.make_project(), __('Create'));
+					}
+				}
+				// payment request
+				if(flt(doc.per_billed)<100) {
+					this.frm.add_custom_button(__('Payment'), () => this.make_payment_entry(), __('Create'));
+				}
+				this.frm.page.set_inner_btn_group_as_primary(__('Create'));
+			}
+		}
 	},
+
+	make_sales_invoice: function() {
+		frappe.model.open_mapped_doc({
+			method: "trava_erpnext.sale_commission.doctype.commission_agent_report.commission_agent_report.make_sales_invoice",
+			frm: this.frm
+		})
+	},
+
+	make_project: function() {
+		frappe.model.open_mapped_doc({
+			method: "trava_erpnext.sale_commission.doctype.commission_agent_report.commission_agent_report.make_project",
+			frm: this.frm
+		})
+	},
+
+	get_method_for_payment: function(){
+		var method = "trava_erpnext.sale_commission.doctype.commission_agent_report.commission_agent_report.get_payment_entry";
+		if(cur_frm.doc.__onload && cur_frm.doc.__onload.make_payment_via_journal_entry){
+			method= "erpnext.accounts.doctype.journal_entry.journal_entry.get_payment_entry_against_order";
+		}
+
+		return method
+	},
+
+	hold_sales_order: function(){
+		var me = this;
+		var d = new frappe.ui.Dialog({
+			title: __('Reason for Hold'),
+			fields: [
+				{
+					"fieldname": "reason_for_hold",
+					"fieldtype": "Text",
+					"reqd": 1,
+				}
+			],
+			primary_action: function() {
+				var data = d.get_values();
+				frappe.call({
+					method: "frappe.desk.form.utils.add_comment",
+					args: {
+						reference_doctype: me.frm.doctype,
+						reference_name: me.frm.docname,
+						content: __('Reason for hold: ')+data.reason_for_hold,
+						comment_email: frappe.session.user,
+						comment_by: frappe.session.user_fullname
+					},
+					callback: function(r) {
+						if(!r.exc) {
+							me.update_status('Hold', 'On Hold')
+							d.hide();
+						}
+					}
+				});
+			}
+		});
+		d.show();
+	},
+	close_sales_order: function(){
+		this.frm.cscript.update_status("Close", "Closed")
+	},
+	update_status: function(label, status){
+		var doc = this.frm.doc;
+		var me = this;
+		frappe.ui.form.is_saving = true;
+		frappe.call({
+			method: "erpnext.selling.doctype.sales_order.sales_order.update_status",
+			args: {status: status, name: doc.name},
+			callback: function(r){
+				me.frm.reload_doc();
+			},
+			always: function() {
+				frappe.ui.form.is_saving = false;
+			}
+		});
+	}
 });
 $.extend(cur_frm.cscript, new trava_erpnext.selling.SalesCommissionController({frm: cur_frm}));

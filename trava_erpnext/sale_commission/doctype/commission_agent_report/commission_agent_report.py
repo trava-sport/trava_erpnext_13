@@ -4,9 +4,12 @@
 
 from __future__ import unicode_literals
 # import frappe
+import sys
 from frappe.model.document import Document
 import frappe
+from frappe import _, scrub
 from frappe.utils import cstr, flt, getdate, cint, nowdate, add_days, get_link_to_form, strip_html
+from frappe.model.utils import get_fetch_values
 from frappe.model.mapper import get_mapped_doc
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.contacts.doctype.address.address import get_company_address
@@ -15,6 +18,10 @@ from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import validate_inter_company_party, update_linked_doc,\
 	unlink_inter_company_doc
+from erpnext.accounts.party import get_party_account
+from erpnext.accounts.utils import get_account_currency
+from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_bank_cash_account
+from erpnext.accounts.doctype.bank_account.bank_account import get_party_bank_account
 
 class CommissionAgentReport(SellingController):
 	
@@ -84,60 +91,16 @@ class CommissionAgentReport(SellingController):
 			project.db_update()
 
 	def check_nextdoc_docstatus(self):
-		# Checks Delivery Note
-		submit_dn = frappe.db.sql_list("""
-			select t1.name
-			from `tabDelivery Note` t1,`tabDelivery Note Item` t2
-			where t1.name = t2.parent and t2.against_sales_order = %s and t1.docstatus = 1""", self.name)
-
-		if submit_dn:
-			submit_dn = [get_link_to_form("Delivery Note", dn) for dn in submit_dn]
-			frappe.throw(_("Delivery Notes {0} must be cancelled before cancelling this Sales Order")
-				.format(", ".join(submit_dn)))
-
 		# Checks Sales Invoice
 		submit_rv = frappe.db.sql_list("""select t1.name
 			from `tabSales Invoice` t1,`tabSales Invoice Item` t2
-			where t1.name = t2.parent and t2.sales_order = %s and t1.docstatus = 1""",
+			where t1.name = t2.parent and t2.commission_agent_report = %s and t1.docstatus = 1""",
 			self.name)
 
 		if submit_rv:
 			submit_rv = [get_link_to_form("Sales Invoice", si) for si in submit_rv]
-			frappe.throw(_("Sales Invoice {0} must be cancelled before cancelling this Sales Order")
+			frappe.throw(_("Sales Invoice {0} must be cancelled before cancelling this Commission Agent Report")
 				.format(", ".join(submit_rv)))
-
-		#check maintenance schedule
-		submit_ms = frappe.db.sql_list("""
-			select t1.name
-			from `tabMaintenance Schedule` t1, `tabMaintenance Schedule Item` t2
-			where t2.parent=t1.name and t2.sales_order = %s and t1.docstatus = 1""", self.name)
-
-		if submit_ms:
-			submit_ms = [get_link_to_form("Maintenance Schedule", ms) for ms in submit_ms]
-			frappe.throw(_("Maintenance Schedule {0} must be cancelled before cancelling this Sales Order")
-				.format(", ".join(submit_ms)))
-
-		# check maintenance visit
-		submit_mv = frappe.db.sql_list("""
-			select t1.name
-			from `tabMaintenance Visit` t1, `tabMaintenance Visit Purpose` t2
-			where t2.parent=t1.name and t2.prevdoc_docname = %s and t1.docstatus = 1""",self.name)
-
-		if submit_mv:
-			submit_mv = [get_link_to_form("Maintenance Visit", mv) for mv in submit_mv]
-			frappe.throw(_("Maintenance Visit {0} must be cancelled before cancelling this Sales Order")
-				.format(", ".join(submit_mv)))
-
-		# check work order
-		pro_order = frappe.db.sql_list("""
-			select name
-			from `tabWork Order`
-			where sales_order = %s and docstatus = 1""", self.name)
-
-		if pro_order:
-			pro_order = [get_link_to_form("Work Order", po) for po in pro_order]
-			frappe.throw(_("Work Order {0} must be cancelled before cancelling this Commission Agent Report")
-				.format(", ".join(pro_order)))
 
 	def check_modified_date(self):
 		mod_db = frappe.db.get_value("CommissionAgentReport", self.name, "modified")
@@ -220,14 +183,12 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		if target.company_address:
 			target.update(get_fetch_values("Sales Invoice", 'company_address', target.company_address))
 
-		# set the redeem loyalty points if provided via shopping cart
-		if source.loyalty_points and source.order_type == "Shopping Cart":
-			target.redeem_loyalty_points = 1
-
 	def update_item(source, target, source_parent):
 		target.amount = flt(source.amount) - flt(source.billed_amt)
 		target.base_amount = target.amount * flt(source_parent.conversion_rate)
 		target.qty = target.amount / flt(source.rate) if (source.rate and source.billed_amt) else source.qty - source.returned_qty
+		target.award = source.award
+		target.base_award = source.base_award
 
 		if source_parent.project:
 			target.cost_center = frappe.db.get_value("Project", source_parent.project, "cost_center")
@@ -271,6 +232,123 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 	}, target_doc, postprocess, ignore_permissions=ignore_permissions)
 
 	return doclist
+
+@frappe.whitelist()
+def make_project(source_name, target_doc=None):
+	def postprocess(source, doc):
+		doc.project_type = "External"
+		doc.project_name = source.name
+
+	doc = get_mapped_doc("Commission Agent Report", source_name, {
+		"Commission Agent Report": {
+			"doctype": "Project",
+			"validation": {
+				"docstatus": ["=", 1]
+			},
+			"field_map":{
+				"name" : "commission_agent_report",
+				"base_grand_total" : "estimated_costing",
+			}
+		},
+	}, target_doc, postprocess)
+
+	return doc
+
+@frappe.whitelist()
+def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=None):
+	doc = frappe.get_doc(dt, dn)
+	if flt(doc.per_billed, 2) > 0:
+		frappe.throw(_("Can only make payment against unbilled {0}").format(dt))
+
+	party_type = "Customer"
+
+	# party account
+	party_account = get_party_account(party_type, doc.get(party_type.lower()), doc.company)
+
+	party_account_currency = doc.get("party_account_currency") or get_account_currency(party_account)
+
+	# payment type
+	payment_type = "Receive"
+
+	# amounts
+	grand_total = outstanding_amount = 0
+	if party_amount:
+		grand_total = outstanding_amount = party_amount
+	else:
+		if party_account_currency == doc.company_currency:
+			grand_total = flt(doc.get("base_rounded_total") or doc.base_grand_total)
+		else:
+			grand_total = flt(doc.get("rounded_total") or doc.grand_total)
+		outstanding_amount = grand_total - flt(doc.advance_paid)
+
+	# bank or cash
+	bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"),
+		account=bank_account)
+
+	if not bank:
+		bank = get_default_bank_cash_account(doc.company, "Cash", mode_of_payment=doc.get("mode_of_payment"),
+			account=bank_account)
+
+	paid_amount = received_amount = 0
+	if party_account_currency == bank.account_currency:
+		paid_amount = received_amount = abs(outstanding_amount)
+	elif payment_type == "Receive":
+		paid_amount = abs(outstanding_amount)
+		if bank_amount:
+			received_amount = bank_amount
+		else:
+			received_amount = paid_amount * doc.get('conversion_rate', 1)
+	else:
+		received_amount = abs(outstanding_amount)
+		if bank_amount:
+			paid_amount = bank_amount
+		else:
+			# if party account currency and bank currency is different then populate paid amount as well
+			paid_amount = received_amount * doc.get('conversion_rate', 1)
+
+	pe = frappe.new_doc("Payment Entry")
+	pe.payment_type = payment_type
+	pe.company = doc.company
+	pe.cost_center = doc.get("cost_center")
+	pe.posting_date = nowdate()
+	pe.mode_of_payment = doc.get("mode_of_payment")
+	pe.party_type = party_type
+	pe.party = doc.get(scrub(party_type))
+	pe.contact_person = doc.get("contact_person")
+	pe.contact_email = doc.get("contact_email")
+	pe.ensure_supplier_is_not_blocked()
+
+	pe.paid_from = party_account if payment_type=="Receive" else bank.account
+	pe.paid_to = party_account if payment_type=="Pay" else bank.account
+	pe.paid_from_account_currency = party_account_currency \
+		if payment_type=="Receive" else bank.account_currency
+	pe.paid_to_account_currency = party_account_currency if payment_type=="Pay" else bank.account_currency
+	pe.paid_amount = paid_amount
+	pe.received_amount = received_amount
+	pe.letter_head = doc.get("letter_head")
+
+	if pe.party_type in ["Customer", "Supplier"]:
+		bank_account = get_party_bank_account(pe.party_type, pe.party)
+		pe.set("bank_account", bank_account)
+		pe.set_bank_account_data()
+
+	# only Purchase Invoice can be blocked individually
+	pe.append("references", {
+		'reference_doctype': dt,
+		'reference_name': dn,
+		"bill_no": doc.get("bill_no"),
+		"due_date": doc.get("due_date"),
+		'total_amount': grand_total,
+		'outstanding_amount': outstanding_amount,
+		'allocated_amount': outstanding_amount
+	})
+
+	pe.setup_party_account_field()
+	pe.set_missing_values()
+	if party_account and bank:
+		pe.set_exchange_rate()
+		pe.set_amounts()
+	return pe
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):
