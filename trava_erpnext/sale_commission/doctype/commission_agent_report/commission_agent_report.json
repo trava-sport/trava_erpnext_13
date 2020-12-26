@@ -23,6 +23,7 @@
   "creation_date",
   "period",
   "agreement",
+  "agreement_type",
   "tax_id",
   "contact_info",
   "customer_address",
@@ -1125,11 +1126,12 @@
    "no_copy": 1
   },
   {
-   "default": "Sales",
+   "depends_on": "customer",
    "fieldname": "agreement",
    "fieldtype": "Link",
    "hide_days": 1,
    "hide_seconds": 1,
+   "in_standard_filter": 1,
    "label": "Agreement",
    "oldfieldname": "order_type",
    "oldfieldtype": "Select",
@@ -1280,12 +1282,19 @@
    "reqd": 1,
    "search_index": 1,
    "width": "160px"
+  },
+  {
+   "fieldname": "agreement_type",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Agreement type",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "is_submittable": 1,
  "links": [],
- "modified": "2020-12-20 13:21:00.033104",
+ "modified": "2020-12-25 20:36:51.629774",
  "modified_by": "Administrator",
  "module": "Sale Commission",
  "name": "Commission Agent Report",

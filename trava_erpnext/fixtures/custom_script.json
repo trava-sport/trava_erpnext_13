@@ -12,3 +12,17 @@
   "script": "frappe.ui.form.on('Sales Order', {\n\tonload (frm) {\n\t\tfrm.set_query('agreement', function() {\n            return {\n                filters: {\n                    customer: frm.doc.customer\n                }\n            };\n\t\t});\n\t},\n\t\n\tcustomer (frm) {\n\t\tfrm.doc.agreement = '';\n\t}\n});"
  }
 ]
+frappe.ui.form.on('Sales Order', {
+    onload (frm) {
+        frm.set_query('agreement', function() {
+            return {
+                filters: {
+                    customer: frm.doc.customer
+                }
+            };
+        });
+    },
+    customer (frm) {
+        rm.doc.agreement = '';
+    }
+});

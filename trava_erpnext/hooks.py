@@ -38,8 +38,10 @@ fixtures = ['Report', 'Role Profile', 'Role', 'Custom Field', 'Custom Script', '
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
-doctype_js = {"Sales Invoice" : "public/js/selling/sales_invoice/sales_invoice.js"}
-#doctype_js = {"Sales Invoice" : "public/js/sales_invoice/commission_sales.js"}
+doctype_js = {
+	"Sales Invoice" : "public/js/sales_invoice.js",
+	"Sales Order" : "public/js/sales_order.js"
+}
 
 # Home Pages
 # ----------
@@ -89,6 +91,9 @@ doctype_js = {"Sales Invoice" : "public/js/selling/sales_invoice/sales_invoice.j
 # override_doctype_class = {
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
+override_doctype_class = {
+ 	"Sales Invoice": "trava_erpnext.overrides.sales_invoice.CustomSalesInvoice"
+ }
 
 # Document Events
 # ---------------

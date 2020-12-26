@@ -1,4 +1,4 @@
-{% include 'trava_erpnext/public/js/selling/commission_sales/commission_sales.js' %};
+{% include 'trava_erpnext/public/js/commission_sales.js' %};
 
 frappe.provide("erpnext.accounts");
 

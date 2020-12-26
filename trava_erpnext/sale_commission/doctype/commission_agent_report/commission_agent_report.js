@@ -1,6 +1,7 @@
 // Copyright (c) 2020, trava and contributors
 // For license information, please see license.txt
-{% include 'trava_erpnext/public/js/selling/commission_sales/commission_sales.js' %};
+{% include 'trava_erpnext/public/js/commission_sales.js' %};
+{% include 'erpnext/selling/sales_common.js' %};
 
 
 frappe.provide("trava_erpnext.selling");

@@ -3,6 +3,37 @@
 
 frappe.provide("trava_erpnext.selling.");
 trava_erpnext.selling.SellingCommission = erpnext.selling.SellingController.extend({
+	customer: function() {
+		this.frm.doc.agreement = '';
+		this._super();
+		var me = this;
+		this.frm.set_query('agreement', function() {
+			return {
+				filters: {
+					customer: me.frm.doc.customer
+				}
+			};
+		});
+	},
+
+	agreement: function() {
+		var me = this;
+		if (this.frm.doc.agreement) {
+			frappe.call({
+				"method": "frappe.client.get_value",
+				"args": {
+					"doctype": "Agreement",
+					"name": this.frm.doc.agreement,
+					"fieldname":'agreement_type'
+				},
+				"callback": function(response) {
+					me.frm.doc.agreement_type = response.message.agreement_type
+					console.log(response.message.agreement_type);
+				}
+			});
+		}
+	},
+
     change_grid_labels: function(company_currency) {
 		this._super(company_currency);
 
@@ -104,4 +135,3 @@ trava_erpnext.selling.SellingCommission = erpnext.selling.SellingController.exte
 		this.frm.refresh_fields();
 	},
 });
-$.extend(cur_frm.cscript, new trava_erpnext.selling.SellingCommission({frm: cur_frm}));
