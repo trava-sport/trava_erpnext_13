@@ -57,8 +57,8 @@ frappe.ui.form.on('Commission Agent Report', {
 		}
 	},
 	onload: function(frm) {
-		if (!frm.doc.creation_date){
-			frm.set_value('creation_date', frappe.datetime.get_today())
+		if (!frm.doc.transaction_date){
+			frm.set_value('transaction_date', frappe.datetime.get_today())
 		}
 
 		frm.set_query('project', function(doc, cdt, cdn) {

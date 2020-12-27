@@ -20,8 +20,8 @@
   "date_incoming_report",
   "column_break1",
   "amended_from",
-  "creation_date",
-  "period",
+  "start_date",
+  "end_date",
   "agreement",
   "agreement_type",
   "tax_id",
@@ -1116,16 +1116,6 @@
    "width": "160px"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "period",
-   "fieldtype": "Int",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "in_list_view": 1,
-   "label": "Period",
-   "no_copy": 1
-  },
-  {
    "depends_on": "customer",
    "fieldname": "agreement",
    "fieldtype": "Link",
@@ -1138,15 +1128,6 @@
    "options": "Agreement",
    "print_hide": 1,
    "reqd": 1
-  },
-  {
-   "default": "Today",
-   "fieldname": "creation_date",
-   "fieldtype": "Date",
-   "in_standard_filter": 1,
-   "label": "Creation Date",
-   "no_copy": 1,
-   "search_index": 1
   },
   {
    "depends_on": "eval:!doc.__islocal",
@@ -1277,7 +1258,7 @@
    "fieldname": "transaction_date",
    "fieldtype": "Date",
    "in_standard_filter": 1,
-   "label": "Date",
+   "label": "Creation Date",
    "no_copy": 1,
    "reqd": 1,
    "search_index": 1,
@@ -1289,12 +1270,26 @@
    "hidden": 1,
    "label": "Agreement type",
    "read_only": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "hide_days": 1,
+   "hide_seconds": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-file-text",
  "is_submittable": 1,
  "links": [],
- "modified": "2020-12-25 20:36:51.629774",
+ "modified": "2020-12-26 19:30:30.753198",
  "modified_by": "Administrator",
  "module": "Sale Commission",
  "name": "Commission Agent Report",
@@ -1363,7 +1358,7 @@
    "write": 1
   }
  ],
- "search_fields": "status, creation_date, customer,customer_name, company",
+ "search_fields": "status, customer,customer_name, company",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

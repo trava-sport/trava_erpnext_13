@@ -10,56 +10,112 @@ from frappe.utils.nestedset import get_descendants_of
 def execute(filters=None):
 	filters = frappe._dict(filters or {})
 
-	columns, data = [], []
+	columns = get_columns(filters)
 	data = get_data(filters)
 	return columns, data
+
+def get_columns(filters):
+	return [
+		{
+			"label": _("Customer"),
+			"fieldtype": "Link",
+			"fieldname": "customer",
+			"options": "Customer",
+			"width": 100
+		},
+		{
+			"label": _("Item Name"),
+			"fieldtype": "Data",
+			"fieldname": "item_name",
+			"width": 140
+		},
+		{
+			"label": _("Item Code"),
+			"fieldtype": "Link",
+			"fieldname": "item_code",
+			"options": "Item",
+			"width": 120
+		},
+		{
+			"label": _("UOM"),
+			"fieldtype": "Link",
+			"fieldname": "stock_uom",
+			"options": "UOM",
+			"width": 100
+		},
+		{
+			"label": _("Handed"),
+			"fieldtype": "Data",
+			"fieldname": "handed_qty",
+			"width": 100
+		},
+		{
+			"label": _("Sales qty"),
+			"fieldtype": "Data",
+			"fieldname": "sales_qty",
+			"width": 100
+		},
+		{
+			"label": _("Sales amount"),
+			"fieldtype": "Data",
+			"fieldname": "sales_amount",
+			"width": 100
+		},
+		{
+			"label": _("Return"),
+			"fieldtype": "Data",
+			"fieldname": "return_qty",
+			"width": 100
+		},
+		{
+			"label": _("Remainder"),
+			"fieldtype": "Data",
+			"fieldname": "remainder_qty",
+			"width": 100
+		}
+	]
 
 def get_data(filters):
 
 	data = []
 
-	company_list = get_descendants_of("Company", filters.get("company"))
-	company_list.append(filters.get("company"))
-
-	customer_details = get_customer_details()
-	sales_order_records = get_sales_order_details(company_list, filters)
+	sales_order_records = get_sales_order_details(filters)
 
 	for record in sales_order_records:
-		customer_record = customer_details.get(record.customer)
+		remainder_qty = record.qty - record.car_qty - record.dn_qty
+		if filters.didnt_report_back == 'Greater than zero':
+			if remainder_qty == 0:
+				continue
+		
+		if filters.didnt_report_back == 'Zero':
+			if remainder_qty != 0:
+				continue
+
 		row = {
-			"item_code": record.item_code,
-			"item_name": record.item_name,
-			"item_group": record.item_group,
-			"description": record.description,
-			"quantity": record.qty,
-			"uom": record.uom,
-			"rate": record.base_rate,
-			"amount": record.base_amount,
-			"sales_order": record.name,
-			"transaction_date": record.transaction_date,
 			"customer": record.customer,
-			"customer_name": customer_record.customer_name,
-			"customer_group": customer_record.customer_group,
-			"territory": record.territory,
-			"project": record.project,
-			"delivered_quantity": flt(record.delivered_qty),
-			"billed_amount": flt(record.billed_amt),
-			"company": record.company
+			"item_name": record.item_name,
+			"item_code": record.item_code,
+			"stock_uom": record.uom,
+			"handed_qty": record.qty,
+			"sales_qty": record.car_qty,
+			"sales_amount": record.amount_principal,
+			"return_qty": record.dn_qty,
+			"remainder_qty": remainder_qty
 		}
 		data.append(row)
 
 	return data
 
-def get_conditions(filters):
+def get_conditions_so(filters):
 	conditions = ''
 	if filters.get('item_group'):
 		conditions += "AND so_item.item_group = %s" %frappe.db.escape(filters.item_group)
 
-	if filters.get('from_date'):
-		conditions += "AND so.transaction_date >= '%s'" %filters.from_date
+	if filters.get('on_date'):
+		conditions += "AND so.transaction_date <= '%s'" %filters.on_date
 
-	if filters.get('to_date'):
-		conditions += "AND so.transaction_date <= '%s'" %filters.to_date
+	if filters.get('agreement'):
+		conditions += "AND so.agreement <= '%s'" %frappe.db.escape(filters.agreement)
 
 	if filters.get("item_code"):
 		conditions += "AND so_item.item_code = %s" %frappe.db.escape(filters.item_code)
@@ -67,48 +123,87 @@ def get_conditions(filters):
 	if filters.get("customer"):
 		conditions += "AND so.customer = %s" %frappe.db.escape(filters.customer)
 
+	if filters.get("company"):
+		conditions += "AND so.company = %s" %frappe.db.escape(filters.company)
+
 	return conditions
 
-def get_customer_details():
-	details = frappe.get_all('Customer',
-		fields=['name', 'customer_name', "customer_group"])
-	customer_details = {}
-	for d in details:
-		customer_details.setdefault(d.name, frappe._dict({
-			"customer_name": d.customer_name,
-			"customer_group": d.customer_group
-		}))
-	return customer_details
+def get_conditions_car(filters):
+	conditions = ''
+	if filters.get('item_group'):
+		conditions += "AND car_item.item_group = %s" %frappe.db.escape(filters.item_group)
 
-def get_sales_order_details(company_list, filters):
-	conditions = get_conditions(filters)
+	if filters.get('on_date'):
+		conditions += "AND car.transaction_date <= '%s'" %filters.on_date
+
+	if filters.get('agreement'):
+		conditions += "AND car.agreement = '%s'" %frappe.db.escape(filters.agreement)
+
+	if filters.get("item_code"):
+		conditions += "AND car_item.item_code = %s" %frappe.db.escape(filters.item_code)
+
+	if filters.get("company"):
+		conditions += "AND car.company = %s" %frappe.db.escape(filters.company)
+
+	return conditions
+
+def get_conditions_dn(filters):
+	conditions = ''
+	if filters.get('item_group'):
+		conditions += "AND dn_item.item_group = %s" %frappe.db.escape(filters.item_group)
+
+	if filters.get('on_date'):
+		conditions += "AND dn.posting_date <= '%s'" %filters.on_date
+
+	if filters.get('agreement'):
+		conditions += "AND dn.agreement = '%s'" %frappe.db.escape(filters.agreement)
+
+	if filters.get("item_code"):
+		conditions += "AND dn_item.item_code = %s" %frappe.db.escape(filters.item_code)
+
+	if filters.get("company"):
+		conditions += "AND dn.company = %s" %frappe.db.escape(filters.company)
+
+	return conditions
+
+def get_sales_order_details(filters):
+	conditions_so = get_conditions_so(filters)
+	conditions_car = get_conditions_car(filters)
+	conditions_dn = get_conditions_dn(filters)
 
 	return frappe.db.sql("""
 		SELECT
-			so_item.item_code, so_item.item_name, so_item.item_group,
-			so_item.description, SUM(so_item.qty) qty, so_item.uom,
-			so_item.base_rate, so_item.base_amount, so.name,
-			so.transaction_date, so.customer, so.territory,
-			so.project, so_item.delivered_qty,
-			so_item.billed_amt, so.company,
-			(SELECT SUM(car_item.qty)
+			so.customer, so_item.item_name, so_item.item_code, 
+			so_item.uom, SUM(so_item.qty) qty,
+			IFNULL((SELECT SUM(car_item.qty)
                 FROM `tabCommission Agent Report` car
                 LEFT JOIN `tabCommission Agent Report Item` car_item 
                 ON car.name = car_item.parent
-                WHERE car_item.item_code = so_item.item_code) car,
-             (SELECT SUM(dn_item.qty)
+                WHERE car_item.item_code = so_item.item_code AND
+                car.docstatus = 1 AND car.agreement_type = 'Commission'
+				AND so.docstatus = 1 {1}), 0) car_qty,
+			IFNULL((SELECT SUM(car_item.amount) - SUM(car_item.award)
+                FROM `tabCommission Agent Report` car
+                LEFT JOIN `tabCommission Agent Report Item` car_item 
+                ON car.name = car_item.parent
+                WHERE car_item.item_code = so_item.item_code AND
+                car.docstatus = 1 AND car.agreement_type = 'Commission'
+				AND so.docstatus = 1 {1}), 0) amount_principal,
+            IFNULL((SELECT SUM(dn_item.qty)
                 FROM `tabDelivery Note` dn
                 LEFT JOIN `tabDelivery Note Item` dn_item 
                 ON dn.name = dn_item.parent
                 WHERE dn_item.item_code = so_item.item_code AND
-                dn.is_return = 1) dn
+                dn.is_return = 1 AND dn.docstatus = 1 AND
+                dn.agreement_type = 'Commission'
+				AND so.docstatus = 1 {2}), 0) dn_qty
 		FROM
 			`tabSales Order` so 
 			JOIN `tabSales Order Item` so_item
 			ON so.name = so_item.parent
+		WHERE
+			so.docstatus = 1 AND so.agreement_type = 'Commission'
+			AND so.docstatus = 1 {0}
 		GROUP BY
 			so_item.item_code
-		WHERE
-			so.company in ({0})
-			AND so.docstatus = 1 {1}
-	""".format(','.join(["%s"] * len(company_list)), conditions), tuple(company_list), as_dict=1)
+	""".format(conditions_so, conditions_car, conditions_dn), as_dict=1)

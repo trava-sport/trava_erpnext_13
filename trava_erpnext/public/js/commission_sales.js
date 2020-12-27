@@ -63,6 +63,13 @@ trava_erpnext.selling.SellingCommission = erpnext.selling.SellingController.exte
 	},
 
 	calculate_totals: function() {
+		console.log('this.frm.doc.doctype')
+		if(!in_list(["Commission Agent Report", "Sales Invoice"], this.frm.doc.doctype)) {
+			this._super();
+			console.log(this.frm.doc.doctype)
+			return
+		}
+		console.log('Прошел')
 		this.calculate_commission_agent();
 		// Changing sequence can cause rounding_adjustmentng issue and on-screen discrepency
 		var me = this;
