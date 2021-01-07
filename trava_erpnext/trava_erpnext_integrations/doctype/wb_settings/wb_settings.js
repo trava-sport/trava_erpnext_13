@@ -14,9 +14,9 @@ frappe.ui.form.on('WB Settings', {
 				args: {
 					//"dateFrom": frappe.datetime.get_today(),
 					"dateFrom": '2020-12-01',
-					"dateTo": '2020-12-30',
-					"reportType": 'reportDetailByPeriod',
-					"doc": 'WB Sales by Sales'
+					"reportType": 'orders',
+					"doc": 'WB Orders',
+					"flag": 1
 				}
 			});
 		});
@@ -26,13 +26,66 @@ frappe.ui.form.on('WB Settings', {
 				method: "trava_erpnext.trava_erpnext_integrations.doctype.wb_settings.wb_settings.schedule_get_report_stocks"
 			});
 		});
+	},
+
+	onload: function(frm) {
+		if(frm.get_field("account_commission") || frm.get_field("account_logistics") || frm.get_field("account_storage")) {
+			frm.set_query("account_commission", function(doc) {
+				var account_type = ["Tax", "Chargeable", "Expense Account"];
+
+				return {
+					query: "erpnext.controllers.queries.tax_account_query",
+					filters: {
+						"account_type": account_type,
+						"company": doc.company
+					}
+				}
+			});
+
+			frm.set_query("account_logistics", function(doc) {
+				var account_type = ["Tax", "Chargeable", "Expense Account"];
+
+				return {
+					query: "erpnext.controllers.queries.tax_account_query",
+					filters: {
+						"account_type": account_type,
+						"company": doc.company
+					}
+				}
+			});
+
+			frm.set_query("account_storage", function(doc) {
+				var account_type = ["Tax", "Chargeable", "Expense Account"];
+
+				return {
+					query: "erpnext.controllers.queries.tax_account_query",
+					filters: {
+						"account_type": account_type,
+						"company": doc.company
+					}
+				}
+			});
+
+			frm.set_query("cost_center", function(doc) {
+				return {
+					filters: {
+						'company': doc.company,
+						"is_group": 0
+					}
+				}
+			});
+		}
+	},
+
+	customer: function(frm) {
+		frm.doc.agreement = '';
+		var me = this;
+		frm.set_query('agreement', function() {
+			return {
+				filters: {
+					customer: frm.doc.customer
+				}
+			};
+		});
 	}
 });
-
-/* var make_sales_invoice = function(frm) {
-	console.log("rembo")
-	frappe.model.open_mapped_doc({
-		method: "trava_erpnext.trava_erpnext_integrations.doctype.wb_settings.wb_report_methods.get_report_stocks",
-		frm: frm
-	})
-} */

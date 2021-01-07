@@ -7,10 +7,6 @@ from six import iteritems
 
 
 class CustomSalesInvoice(SalesInvoice):
-	""" def validate(self):
-		self.so_dn_required()
-		super(SalesInvoice, self).validate() """
-
 	def so_dn_required(self):
 		"""check in manage account if sales order / delivery note required or not."""
 		if self.is_return:

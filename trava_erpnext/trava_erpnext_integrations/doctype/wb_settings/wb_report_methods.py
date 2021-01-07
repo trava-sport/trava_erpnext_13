@@ -12,8 +12,9 @@ from datetime import datetime, timedelta
 
 #Get and Create Products
 @frappe.whitelist()
-def get_report(dateFrom, dateTo, reportType, doc, flag=0, rrd_id=0):
-	if flag == 1:
+def get_report(dateFrom, reportType, doc, dateTo=None, flag=0, rrd_id=0):
+	if flag == '1':
+		flag = 1
 		create_report(dateFrom, reportType, doc, flag)
 	else:
 		reports = get_reports_instance()
@@ -29,7 +30,7 @@ def get_report(dateFrom, dateTo, reportType, doc, flag=0, rrd_id=0):
 		elif reportType == 'sales':
 			create_report_sales(report_response)
 		elif reportType == 'reportDetailByPeriod':
-			if flag == 1 and rrd_id == 0:
+			if doc == 'WB Sales by Sales Monthly':
 				deleting_data_in_wb_report(dateFrom, reportType, doc)
 			create_report_sales_by_sales(report_response, dateFrom, dateTo, reportType, doc, rrd_id)
 

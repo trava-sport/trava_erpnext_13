@@ -69,6 +69,8 @@ frappe.ui.form.on('Commission Agent Report', {
 				}
 			}
 		});
+
+		cur_frm.cscript.calculate_taxes_and_totals();
 	},
 });
 

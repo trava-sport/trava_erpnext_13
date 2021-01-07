@@ -58,7 +58,7 @@ class WBSettings(Document):
 			dateFrom = self.date_from
 			dateTo = self.date_to
 			frappe.enqueue('trava_erpnext.trava_erpnext_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-				dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales')
+				dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales Monthly')
 
 def schedule_get_order_details():
 	mws_settings = frappe.get_doc("WB Settings")
@@ -75,17 +75,27 @@ def schedule_get_report_stocks():
 			reportType='stocks', doc='WB Stocks')
 
 @frappe.whitelist()
-def schedule_get_report_orders():
+def schedule_get_report_orders_daily():
 	mws_settings = frappe.get_doc("WB Settings")
 	if mws_settings.enable_sync and mws_settings.enable_wb:
 		now = datetime.now()
 		thirty_minutes = timedelta(minutes=30)
 		dateFrom = now - thirty_minutes
 		frappe.enqueue('trava_erpnext.trava_erpnext_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-			reportType='stocks', doc='WB Stocks')
+			reportType='orders', doc='WB Orders')
 
 @frappe.whitelist()
-def schedule_get_report_sales():
+def schedule_get_report_orders_monthly():
+	mws_settings = frappe.get_doc("WB Settings")
+	if mws_settings.enable_sync and mws_settings.enable_wb:
+		now = datetime.now()
+		thirty_five_days = timedelta(days=35)
+		dateFrom = now - thirty_five_days
+		frappe.enqueue('trava_erpnext.trava_erpnext_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
+			reportType='orders', doc='WB Orders', flag=1)
+
+@frappe.whitelist()
+def schedule_get_report_sales_daily():
 	mws_settings = frappe.get_doc("WB Settings")
 	if mws_settings.enable_sync and mws_settings.enable_wb:
 		now = datetime.now()
@@ -95,14 +105,23 @@ def schedule_get_report_sales():
 			reportType='sales', doc='WB Sales')
 
 @frappe.whitelist()
+def schedule_get_report_sales_monthly():
+	mws_settings = frappe.get_doc("WB Settings")
+	if mws_settings.enable_sync and mws_settings.enable_wb:
+		now = datetime.now()
+		thirty_five_days = timedelta(days=35)
+		dateFrom = now - thirty_five_days
+		frappe.enqueue('trava_erpnext.trava_erpnext_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
+			reportType='sales', doc='WB Sales', flag=1)
+
+@frappe.whitelist()
 def schedule_get_report_sales_by_sales():
 	mws_settings = frappe.get_doc("WB Settings")
 	if mws_settings.enable_sync and mws_settings.enable_wb:
 		now = datetime.now()
-		nine_days = timedelta(days=9)
-		two_days = timedelta(days=2)
-		dateFrom = now - nine_days
-		dateTo = now - two_days
+		one_days = timedelta(days=1)
+		dateFrom = now - one_days
+		dateTo = now - one_days
 		frappe.enqueue('trava_erpnext.trava_erpnext_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
 			dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales')
 

@@ -63,59 +63,12 @@ trava_erpnext.selling.SellingCommission = erpnext.selling.SellingController.exte
 	},
 
 	calculate_totals: function() {
-		console.log('this.frm.doc.doctype')
+		this._super();
 		if(!in_list(["Commission Agent Report", "Sales Invoice"], this.frm.doc.doctype)) {
-			this._super();
-			console.log(this.frm.doc.doctype)
 			return
 		}
-		console.log('Прошел')
 		this.calculate_commission_agent();
-		// Changing sequence can cause rounding_adjustmentng issue and on-screen discrepency
-		var me = this;
-		var tax_count = this.frm.doc["taxes"] ? this.frm.doc["taxes"].length : 0;
-		this.frm.doc.grand_total = flt(tax_count
-			? this.frm.doc["taxes"][tax_count - 1].total + flt(this.frm.doc.rounding_adjustment) - this.frm.doc.commission_agents_remuneration
-			: this.frm.doc.net_total - this.frm.doc.commission_agents_remuneration);
 
-		if(in_list(["Quotation", "Sales Order", "Delivery Note", "Sales Invoice", "POS Invoice"], this.frm.doc.doctype)) {
-			this.frm.doc.base_grand_total = (this.frm.doc.total_taxes_and_charges) ?
-				flt(this.frm.doc.grand_total * this.frm.doc.conversion_rate) : this.frm.doc.base_net_total;
-		} else {
-			// other charges added/deducted
-			this.frm.doc.taxes_and_charges_added = this.frm.doc.taxes_and_charges_deducted = 0.0;
-			if(tax_count) {
-				$.each(this.frm.doc["taxes"] || [], function(i, tax) {
-					if (in_list(["Valuation and Total", "Total"], tax.category)) {
-						if(tax.add_deduct_tax == "Add") {
-							me.frm.doc.taxes_and_charges_added += flt(tax.tax_amount_after_discount_amount);
-						} else {
-							me.frm.doc.taxes_and_charges_deducted += flt(tax.tax_amount_after_discount_amount);
-						}
-					}
-				});
-
-				frappe.model.round_floats_in(this.frm.doc,
-					["taxes_and_charges_added", "taxes_and_charges_deducted"]);
-			}
-
-			this.frm.doc.base_grand_total = flt((this.frm.doc.taxes_and_charges_added || this.frm.doc.taxes_and_charges_deducted) ?
-				flt(this.frm.doc.grand_total * this.frm.doc.conversion_rate) : this.frm.doc.base_net_total);
-
-			this.set_in_company_currency(this.frm.doc,
-				["taxes_and_charges_added", "taxes_and_charges_deducted"]);
-		}
-
-		this.frm.doc.total_taxes_and_charges = flt(this.frm.doc.grand_total - this.frm.doc.net_total
-			- flt(this.frm.doc.rounding_adjustment), precision("total_taxes_and_charges"));
-
-		this.set_in_company_currency(this.frm.doc, ["total_taxes_and_charges", "rounding_adjustment"]);
-
-		// Round grand total as per precision
-		frappe.model.round_floats_in(this.frm.doc, ["grand_total", "base_grand_total"]);
-
-		// rounded totals
-		this.set_rounded_total();
 		if(in_list(["Commission Agent Report"], this.frm.doc.doctype)){
 			this.calculate_amount_principal();
 		}
@@ -132,6 +85,26 @@ trava_erpnext.selling.SellingCommission = erpnext.selling.SellingController.exte
 			});
 
 		frappe.model.round_floats_in(this.frm.doc, ["commission_agents_remuneration", "base_commission_agents_remuneration"]);
+
+		let tax_count = this.frm.doc["taxes"] ? this.frm.doc["taxes"].length : 0;
+		let tax = this.frm.doc["taxes"];
+
+		frappe.call({
+			method: "trava_erpnext.sale_commission.doctype.commission_agent_report.commission_agent_report.get_wb_settings",
+			"args": {
+				"name": this.frm.doc.name
+			}
+		});
+
+		let wb_settings = this.frm.doc.wb_setting_commission;
+		if(tax_count) {
+			for (var prop in tax) {
+				if(tax[prop].account_head === wb_settings) {
+					tax[prop].tax_amount = -me.frm.doc.commission_agents_remuneration
+				}
+			}
+		}
+
 		this.frm.refresh_fields();
 	},
 
@@ -140,5 +113,5 @@ trava_erpnext.selling.SellingCommission = erpnext.selling.SellingController.exte
 		this.frm.doc.base_amount_principal = flt(this.frm.doc.base_grand_total);
 
 		this.frm.refresh_fields();
-	},
+	}
 });
