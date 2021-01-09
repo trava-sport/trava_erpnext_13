@@ -480,7 +480,7 @@ def create_item_code(data, article_and_color):
 			"brand": new_brand,
 			"is_stock_item": 1,
 			"item_code": "%s-%s-%s" % (article_and_color[0], article_and_color[1], data.ts_name),
-			"item_name": "%s-%s-%s" % (article_and_color[0], article_and_color[1], data.ts_name),
+			"item_name": "%s-%s-%s-%s" % (data.subject_name, article_and_color[0], article_and_color[1], data.ts_name),
 			"item_group": mws_settings.item_group,
 			"has_variants": 0,
 			"attributes":new_attributes,
