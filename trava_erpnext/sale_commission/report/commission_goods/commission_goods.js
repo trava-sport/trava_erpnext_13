@@ -16,7 +16,11 @@ frappe.query_reports["Commission Goods"] = {
 			fieldname: "didnt_report_back",
 			label: __("Didn't report back"),
 			fieldtype: "Select",
-			options: ["Any", "Greater than zero", "Zero"],
+			options: [
+				{ "value": "Any", "label": __("Any") },
+				{ "value": "Greater than zero", "label": __("Greater than zero") },
+				{ "value": "Zero", "label": __("Zero") }
+			],
 			default: "Any",
 			reqd: 1
 		},

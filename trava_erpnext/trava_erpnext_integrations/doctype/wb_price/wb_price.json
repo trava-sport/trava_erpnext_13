@@ -14,7 +14,7 @@
   "number_days_site",
   "unmarketable",
   "date_unmarketable",
-  "turnover",
+  "turnover_rate",
   "remainder_goods",
   "current_retail_price",
   "new_retail_price",
@@ -85,6 +85,7 @@
    "in_list_view": 1,
    "label": "Last barcode",
    "print_hide": 1,
+   "read_only": 1,
    "width": "100px"
   },
   {
@@ -110,15 +111,6 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Date of appearance of the illiquid",
-   "print_hide": 1,
-   "read_only": 1,
-   "width": "100px"
-  },
-  {
-   "fieldname": "turnover",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Turnover",
    "print_hide": 1,
    "read_only": 1,
    "width": "100px"
@@ -275,11 +267,20 @@
    "print_hide": 1,
    "read_only": 1,
    "width": "100px"
+  },
+  {
+   "fieldname": "turnover_rate",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Turnover rate",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-01-09 04:33:01.484663",
+ "modified": "2021-01-12 03:48:24.898353",
  "modified_by": "Administrator",
  "module": "Trava ERPNext Integrations",
  "name": "WB Price",

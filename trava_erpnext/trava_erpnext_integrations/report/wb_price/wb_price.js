@@ -14,11 +14,12 @@ frappe.query_reports["WB Price"] = {
 				return {
 					filters: { 'company': company }
 				}
-			}
+			},
+			"reqd": 1
 		},
 		{
 			"fieldname":"company",
-			"label": __("Company"),
+			"label": __("Company for valuation rate selection"),
 			"fieldtype": "Link",
 			"options": "Company",
 			"reqd": 1,
@@ -31,112 +32,184 @@ frappe.query_reports["WB Price"] = {
 			"options": "Brand"
 		},
 		{
-			"label": _("From the new discount"),
+			"label": __("New price"),
+			"fieldtype": "Int",
+			"fieldname": "new_price",
+			"width": 70
+		},
+		{
+			"label": __("New discount"),
+			"fieldtype": "Int",
+			"fieldname": "new_discount",
+			"width": 70
+		},
+		{
+			"label": __("New promo code"),
+			"fieldtype": "Int",
+			"fieldname": "new_promo_code_discount",
+			"width": 70
+		},
+		{
+			"label": __("From the new price"),
+			"fieldtype": "Int",
+			"fieldname": "from_new_price",
+			"width": 100
+		},
+		{
+			"label": __("To the new price"),
+			"fieldtype": "Int",
+			"fieldname": "to_new_price",
+			"width": 100
+		},
+		{
+			"label": __("From the new discount"),
 			"fieldtype": "Int",
 			"fieldname": "from_new_discount",
 			"width": 100
 		},
 		{
-			"label": _("To the new discount"),
+			"label": __("To the new discount"),
 			"fieldtype": "Int",
 			"fieldname": "to_new_discount",
 			"width": 100
 		},
 		{
-			"label": _("From the new promo code"),
+			"label": __("From the new promo code discount"),
 			"fieldtype": "Int",
-			"fieldname": "from_new_promo_code",
+			"fieldname": "from_new_promo_code_discount",
 			"width": 70
 		},
 		{
-			"label": _("To the new promo code"),
+			"label": __("To the new promo code discount"),
 			"fieldtype": "Int",
-			"fieldname": "to_new_promo_code",
+			"fieldname": "to_new_promo_code_discount",
 			"width": 70
 		},
 		{
-			"label": _("From the current price without discounts"),
+			"label": __("From the turnover rate"),
+			"fieldtype": "Float",
+			"fieldname": "from_turnover_rate",
+			"width": 100
+		},
+		{
+			"label": __("To the turnover rate"),
+			"fieldtype": "Float",
+			"fieldname": "to_turnover_rate",
+			"width": 100
+		},
+		{
+			"label": __("From the current discount"),
+			"fieldtype": "Int",
+			"fieldname": "from_current_discount",
+			"width": 100
+		},
+		{
+			"label": __("To the current discount"),
+			"fieldtype": "Int",
+			"fieldname": "to_current_discount",
+			"width": 100
+		},
+		{
+			"label": __("From the current promo code"),
+			"fieldtype": "Int",
+			"fieldname": "from_current_promo_code",
+			"width": 70
+		},
+		{
+			"label": __("To the current promo code"),
+			"fieldtype": "Int",
+			"fieldname": "to_current_promo_code",
+			"width": 70
+		},
+		{
+			"label": __("From the current price without discounts"),
 			"fieldtype": "Float",
 			"fieldname": "from_current_price",
 			"width": 100
 		},
 		{
-			"label": _("To the current price without discounts"),
+			"label": __("To the current price without discounts"),
 			"fieldtype": "Float",
 			"fieldname": "to_current_price",
 			"width": 100
 		},
 		{
-			"label": _("From the current price with discount"),
+			"label": __("From the current price with discount"),
 			"fieldtype": "Float",
 			"fieldname": "from_current_price_discount",
 			"width": 100
 		},
 		{
-			"label": _("To the current price with discount"),
+			"label": __("To the current price with discount"),
 			"fieldtype": "Float",
 			"fieldname": "to_current_price_discount",
 			"width": 100
 		},
 		{
-			"label": _("From the current price with discount and promo code"),
+			"label": __("From the current price with discount and promo code"),
 			"fieldtype": "Float",
-			"fieldname": "from_current_price_discount_promo",
+			"fieldname": "from_current_price_discount_promo_code",
 			"width": 100
 		},
 		{
-			"label": _("To the current price with discount and promo code"),
+			"label": __("To the current price with discount and promo code"),
 			"fieldtype": "Float",
-			"fieldname": "to_current_price_discount_promo",
+			"fieldname": "to_current_price_discount_promo_code",
 			"width": 100
 		},
 		{
-			"label": _("From the new price with discount"),
+			"label": __("From the new price with discount"),
 			"fieldtype": "Float",
 			"fieldname": "from_new_price_discount",
 			"width": 100
 		},
 		{
-			"label": _("To the new price with discount"),
+			"label": __("To the new price with discount"),
 			"fieldtype": "Float",
 			"fieldname": "to_new_price_discount",
 			"width": 100
 		},
 		{
-			"label": _("From the new price with discount and promo code"),
+			"label": __("From the new price with discount and promo code"),
 			"fieldtype": "Float",
-			"fieldname": "from_new_price_discount_promo",
+			"fieldname": "from_new_price_disc_promo_code",
 			"width": 100
 		},
 		{
-			"label": _("To the new price with discount and promo code"),
+			"label": __("To the new price with discount and promo code"),
 			"fieldtype": "Float",
-			"fieldname": "to_new_price_discount_promo",
+			"fieldname": "to_new_price_disc_promo_code",
 			"width": 100
 		},
 		{
-			"label": _("From current net profit"),
+			"label": __("From current net profit"),
 			"fieldtype": "Float",
 			"fieldname": "from_current_net_profit",
 			"width": 100
 		},
 		{
-			"label": _("To current net profit"),
+			"label": __("To current net profit"),
 			"fieldtype": "Float",
 			"fieldname": "to_current_net_profit",
 			"width": 100
 		},
 		{
-			"label": _("From new net profit"),
+			"label": __("From new net profit"),
 			"fieldtype": "Float",
 			"fieldname": "from_new_net_profit",
 			"width": 100
 		},
 		{
-			"label": _("To new net profit"),
+			"label": __("To new net profit"),
 			"fieldtype": "Float",
 			"fieldname": "to_new_net_profit",
 			"width": 100
+		},
+		{
+			"label": __("The desired net profit"),
+			"fieldtype": "Float",
+			"fieldname": "desired_net_profit",
+			"width": 60
 		},
 		{
 			"fieldname":"from_date_sales",
@@ -153,28 +226,44 @@ frappe.query_reports["WB Price"] = {
 			"reqd": 1
 		},
 		{
-			"label": _("From sales"),
+			"label": __("From sales"),
 			"fieldtype": "Float",
 			"fieldname": "from_sales",
 			"width": 100
 		},
 		{
-			"label": _("To sales"),
+			"label": __("To sales"),
 			"fieldtype": "Float",
 			"fieldname": "to_sales",
 			"width": 100
 		},
 		{
-			"label": _("From the remnant"),
+			"label": __("From the remnant"),
 			"fieldtype": "Float",
 			"fieldname": "from_remnant",
 			"width": 100
 		},
 		{
-			"label": _("To the remnant"),
+			"label": __("To the remnant"),
 			"fieldtype": "Float",
 			"fieldname": "to_remnant",
 			"width": 100
 		},
+		{
+			fieldname: "unmarketable",
+			label: __("Unmarketable"),
+			fieldtype: "Select",
+			options: [
+				{ "value": "Все", "label": __("Все") },
+				{ "value": "Да", "label": __("Да") },
+				{ "value": "Нет", "label": __("Нет") }
+			]
+		},
+		{
+			"fieldname": "calculation_new_price_discounts",
+			"label": __("Calculation of the new price with discounts from the new retail price(default calculation from the standard price)"),
+			"fieldtype": "Check",
+			"default": 0
+		}
 	]
 };

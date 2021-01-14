@@ -78,6 +78,7 @@
   "column_break_3",
   "commission_agents_remuneration",
   "amount_principal",
+  "amount_logistics",
   "wb_setting_commission",
   "totals",
   "base_grand_total",
@@ -1292,12 +1293,23 @@
    "hidden": 1,
    "label": "WB Setting Commission",
    "read_only": 1
+  },
+  {
+   "columns": 1,
+   "description": "This field is filled in only for the report. You must also specify the cost of logistics in taxes.",
+   "fieldname": "amount_logistics",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount for logistics services",
+   "options": "currency",
+   "print_hide": 1,
+   "width": "150px"
   }
  ],
  "icon": "fa fa-file-text",
  "is_submittable": 1,
  "links": [],
- "modified": "2021-01-07 09:24:10.169245",
+ "modified": "2021-01-14 06:57:24.275690",
  "modified_by": "Administrator",
  "module": "Sale Commission",
  "name": "Commission Agent Report",
