@@ -22,34 +22,7 @@ frappe.query_reports["WB Summary Report"] = {
 			"label": __("Brand"),
 			"fieldtype": "Link",
 			"options": "Brand",
-			default: "Веселый носочник",
-		},
-		{
-			fieldname: "tree_type",
-			label: __("Tree Type"),
-			fieldtype: "Select",
-			options: ["Item"],
-			default: "Item",
-			reqd: 1
-		},
-		{
-			fieldname: "doc_type",
-			label: __("based_on"),
-			fieldtype: "Select",
-			options: ["Sales Order","Delivery Note","Sales Invoice"],
-			default: "Sales Invoice",
-			reqd: 1
-		},
-		{
-			fieldname: "value_quantity",
-			label: __("Value Or Qty"),
-			fieldtype: "Select",
-			options: [
-				{ "value": "Value", "label": __("Value") },
-				{ "value": "Quantity", "label": __("Quantity") },
-			],
-			default: "Value",
-			reqd: 1
+			"depends_on": "eval: doc.warehouse_storage != 1"
 		},
 		{
 			fieldname: "from_date",
@@ -74,6 +47,14 @@ frappe.query_reports["WB Summary Report"] = {
 			reqd: 1
 		},
 		{
+			"fieldname":"customer",
+			"label": __("Customer"),
+			"fieldtype": "Link",
+			"options": "Customer",
+			"depends_on": "eval: doc.warehouse_storage == 1",
+			"mandatory_depends_on": "eval: doc.warehouse_storage == 1"
+		},
+		{
 			fieldname: "range",
 			label: __("Range"),
 			fieldtype: "Select",
@@ -85,7 +66,37 @@ frappe.query_reports["WB Summary Report"] = {
 			],
 			default: "Monthly",
 			reqd: 1
+		},
+		{
+			"fieldname": "warehouse_storage",
+			"label": __("Use the amount for warehouse storage from the Commission Agent Report)"),
+			"fieldtype": "Check",
+			"default": 0
 		}
+	],
 
-	]
+	after_datatable_render: table_instance => {
+		let data = table_instance.datamanager.data;
+		for (let row = 0; row < data.length; ++row) {
+			if (row % 2 == 0) continue;
+			let data_obj = data[row];
+			let index =0;
+			let arr = [];
+			const symbolsLength = Object.getOwnPropertySymbols(data_obj);
+			const withoutSymbolLength = Object.keys(data_obj);
+			let length = symbolsLength + withoutSymbolLength;
+			length = length.split(',')
+			for (let row = 0; row < length.length; ++row){
+				arr.push(index);
+				index += 1;
+			}
+			if (data_obj) {
+				let columns_to_highlight = arr;
+				columns_to_highlight.forEach(col => {
+					table_instance.style.setStyle(`.dt-cell--${col + 1}-${row}`, {backgroundColor: 'rgba(37,220,2,0.2);'});
+				});
+			}
+		}
+		table_instance.style.setStyle(`.dt-scrollable`, {height: '600px;'});
+	}
 };

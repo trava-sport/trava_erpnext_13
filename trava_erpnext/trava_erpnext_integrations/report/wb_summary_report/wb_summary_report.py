@@ -37,28 +37,11 @@ class Analytics(object):
 
 	def get_columns(self):
 		self.columns = [{
-				"label": _(self.filters.tree_type),
-				"options": self.filters.tree_type if self.filters.tree_type != "Order Type" else "",
+				"label": _("Name"),
 				"fieldname": "entity",
-				"fieldtype": "Link" if self.filters.tree_type != "Order Type" else "Data",
-				"width": 140 if self.filters.tree_type != "Order Type" else 200
-			}]
-		if self.filters.tree_type in ["Customer", "Supplier", "Item"]:
-			self.columns.append({
-				"label": _(self.filters.tree_type + " Name"),
-				"fieldname": "entity_name",
 				"fieldtype": "Data",
-				"width": 140
-			})
-
-		if self.filters.tree_type == "Item":
-			self.columns.append({
-				"label": _("UOM"),
-				"fieldname": 'stock_uom',
-				"fieldtype": "Link",
-				"options": "UOM",
-				"width": 100
-			})
+				"width":  200
+			}]
 
 		for end_date in self.periodic_daterange:
 			period = self.get_period(end_date[1])
@@ -77,81 +60,18 @@ class Analytics(object):
 		})
 
 	def get_data(self):
-		if self.filters.tree_type in ["Customer", "Supplier"]:
-			self.get_sales_transactions_based_on_customers_or_suppliers()
-			self.get_rows()
-
-		elif self.filters.tree_type == 'Item':
-			self.get_sales_transactions_based_on_items()
-			self.get_rows()
-
-		elif self.filters.tree_type in ["Customer Group", "Supplier Group", "Territory"]:
-			self.get_sales_transactions_based_on_customer_or_territory_group()
-			self.get_rows_by_group()
-
-		elif self.filters.tree_type == 'Item Group':
-			self.get_sales_transactions_based_on_item_group()
-			self.get_rows_by_group()
-
-		elif self.filters.tree_type == "Order Type":
-			if self.filters.doc_type != "Sales Order":
-				self.data = []
-				return
-			self.get_sales_transactions_based_on_order_type()
-			self.get_rows_by_group()
-
-		elif self.filters.tree_type == "Project":
-			self.get_sales_transactions_based_on_project()
-			self.get_rows()
-
-	def get_sales_transactions_based_on_order_type(self):
-		if self.filters["value_quantity"] == 'Value':
-			value_field = "base_net_total"
-		else:
-			value_field = "total_qty"
-
-		self.entries = frappe.db.sql(""" select s.order_type as entity, s.{value_field} as value_field, s.{date_field}
-			from `tab{doctype}` s where s.docstatus = 1 and s.company = %s and s.{date_field} between %s and %s
-			and ifnull(s.order_type, '') != '' order by s.order_type
-		"""
-		.format(date_field=self.date_field, value_field=value_field, doctype=self.filters.doc_type),
-		(self.filters.company, self.filters.from_date, self.filters.to_date), as_dict=1)
-
-		self.get_teams()
-
-	def get_sales_transactions_based_on_customers_or_suppliers(self):
-		if self.filters["value_quantity"] == 'Value':
-			value_field = "base_net_total as value_field"
-		else:
-			value_field = "total_qty as value_field"
-
-		if self.filters.tree_type == 'Customer':
-			entity = "customer as entity"
-			entity_name = "customer_name as entity_name"
-		else:
-			entity = "supplier as entity"
-			entity_name = "supplier_name as entity_name"
-
-		self.entries = frappe.get_all(self.filters.doc_type,
-			fields=[entity, entity_name, value_field, self.date_field],
-			filters={
-				"docstatus": 1,
-				"company": self.filters.company,
-				self.date_field: ('between', [self.filters.from_date, self.filters.to_date])
-			}
-		)
-
-		self.entity_names = {}
-		for d in self.entries:
-			self.entity_names.setdefault(d.entity, d.entity_name)
+		self.get_sales_transactions_based_on_items()
+		self.get_rows()
 
 	def get_sales_transactions_based_on_items(self):
 
-		conditions = ''
+		brand_sales = brand_stock_balance = ""
 		if self.filters.brand:
-			conditions += "and wb_sas.brand_name = %s" %frappe.db.escape(self.filters.brand)
+			brand_sales = "and wb_sas.brand_name = %s" %frappe.db.escape(self.filters.brand)
+			brand_stock_balance = "and wb_stock.brand = %s" %frappe.db.escape(self.filters.brand)
 		warehouse = "%s" %frappe.db.escape(self.filters.warehouse)
 		company = "%s" %frappe.db.escape(self.filters.company)
+		customer = "%s" %frappe.db.escape(self.filters.customer)
 
 		all_entries = []
 		for date in self.periodic_daterange:
@@ -159,31 +79,69 @@ class Analytics(object):
 			to_date = "'%s'" %date[1]
 
 			entries_sales = frappe.db.sql("""
-				select sum(wb_sas.retail_price_withdisc_rub) as sales_amount, sum(wb_sas.retail_commission) as amount_commission_wb,
-				sum(wb_sas.for_pay) as supplier_remuneration, sum(wb_sas.quantity) total_qty
+				select IFNULL(sum(wb_sas.retail_price_withdisc_rub), 0) as sales_amount, 
+				IFNULL(sum(wb_sas.retail_commission), 0) as amount_commission_wb
 				from `tabWB Sales by Sales` wb_sas
 				where wb_sas.supplier_oper_name = "Продажа" and wb_sas.sale_dt between {1} and {2} {0}
 			"""
-			.format(conditions, from_date, to_date), as_dict=1)
+			.format(brand_sales, from_date, to_date), as_dict=1)
 
-			entries_logistics = frappe.db.sql("""
-				select sum(wb_sas.delivery_rub) as amount_logistics
+			supplier_remuneration = frappe.db.sql("""
+				select IFNULL(sum(wb_sas.for_pay), 0) as supplier_remuneration
+				from `tabWB Sales by Sales` wb_sas
+				where wb_sas.supplier_oper_name = "Продажа" and wb_sas.sale_dt between {1} and {2} {0}
+			"""
+			.format(brand_sales, from_date, to_date), as_dict=1)
+
+			total_qty = frappe.db.sql("""
+				select IFNULL(sum(wb_sas.quantity), 0) total_qty
+				from `tabWB Sales by Sales` wb_sas
+				where wb_sas.supplier_oper_name = "Продажа" and wb_sas.sale_dt between {1} and {2} {0}
+			"""
+			.format(brand_sales, from_date, to_date), as_dict=1)
+
+			logistics = frappe.db.sql("""
+				select IFNULL(sum(wb_sas.delivery_rub), 0) as amount_logistics
 				from `tabWB Sales by Sales` wb_sas
 				where wb_sas.supplier_oper_name = "Логистика" and wb_sas.sale_dt between {1} and {2} {0}
 			"""
-			.format(conditions, from_date, to_date), as_dict=1)
+			.format(brand_sales, from_date, to_date), as_dict=1)
 
-			entries_purchases = frappe.db.sql("""
-				select sum(IFNULL((select avg(sle.valuation_rate)
+			purchases = frappe.db.sql("""
+				select sum((select IFNULL(avg(sle.valuation_rate), 0)
 					from `tabStock Ledger Entry` sle
 					where sle.item_code = (select parent from `tabItem Barcode` where barcode = wb_sas.barcode)
 					and sle.creation between {2} and {3}
 					and sle.modified between {2} and {3} 
-					and sle.warehouse = {0} and sle.company = {1}), 0)) amount_purchases
+					and sle.warehouse = {0} and sle.company = {1})) amount_purchases
 				from `tabWB Sales by Sales` wb_sas
 				where wb_sas.supplier_oper_name = "Продажа" and wb_sas.sale_dt between {2} and {3} {4}
 			"""
-			.format(warehouse, company, from_date, to_date, conditions), as_dict=1)
+			.format(warehouse, company, from_date, to_date, brand_sales), as_dict=1)
+
+			if purchases[0]["amount_purchases"] == None:
+				purchases[0]["amount_purchases"] = 0.0
+
+			if self.filters.warehouse_storage:
+				storage = frappe.db.sql("""
+					select IFNULL(sum(car.amount_storage), 0) as cost_storage
+					from `tabCommission Agent Report` car
+					where car.docstatus = 1 and car.agreement_type = 'Commission'
+					and car.start_date between {0} and {1}   
+					and car.end_date between {0} and {1}
+					and car.company = {2} and car.customer = {3}
+				"""
+				.format(from_date, to_date, company, customer), as_dict=1)
+			else:
+				stock_balance = frappe.db.sql("""
+					select IFNULL(sum(wb_stock.quantity), 0) as stock_balance
+					from `tabWB Stocks` wb_stock
+					where wb_stock.last_change_date = {0} {1}
+				"""
+				.format(from_date, brand_stock_balance), as_dict=1)
+
+				storage = (stock_balance[0]['stock_balance'] - total_qty[0]['total_qty'] / 7 * 60) * 0.5 * 7
+				storage = [{"cost_storage": storage}]
 
 			city_name = {"Коледино": "koledino", "Подольск": "podolsk", "Пушкино": "pushkino", "Электросталь": "elektrostal", 
 				"Домодедово": "domodedovo", "Краснодар": "krasnodar", "Екатеринбург": "yekaterinburg", "Хабаровск": "khabarovsk", 
@@ -197,14 +155,51 @@ class Analytics(object):
 					from `tabWB Sales by Sales` wb_sas
 					where wb_sas.supplier_oper_name = "Продажа" and wb_sas.office_name = {3} and wb_sas.sale_dt between {1} and {2} {0}
 				"""
-				.format(conditions, from_date, to_date, city, value), as_dict=1)
+				.format(brand_sales, from_date, to_date, city, value), as_dict=1)
 
 				all_city.extend(city_qty)
 
+			calculated_supplier_remuneration = (entries_sales[0]['sales_amount'] - entries_sales[0]['amount_commission_wb'] 
+				- logistics[0]['amount_logistics'] - storage[0]['cost_storage'])
+			calculated_supplier_remuneration = {"calculated_supplier_remuneration": calculated_supplier_remuneration}
+
+			if entries_sales[0]['sales_amount'] == 0:
+				entries_sales[0]['sales_amount'] = 1
+
+			net_profit = supplier_remuneration[0]['supplier_remuneration'] - purchases[0]['amount_purchases']
+			net_profit_percent = net_profit / entries_sales[0]['sales_amount']
+			net_profit = {"net_profit": net_profit}
+			net_profit_percent = {"net_profit_percent": net_profit_percent}
+			calculated_net_profit = calculated_supplier_remuneration["calculated_supplier_remuneration"] - purchases[0]['amount_purchases']
+			calculated_net_profit_percent = calculated_net_profit / entries_sales[0]['sales_amount']
+			calculated_net_profit_percent = {"calculated_net_profit_percent": calculated_net_profit_percent}
+			calculated_net_profit = {"calculated_net_profit": calculated_net_profit}
+			minus_commission = entries_sales[0]['sales_amount'] - entries_sales[0]['amount_commission_wb']
+			commission_percent_wb = (entries_sales[0]['sales_amount'] - minus_commission) / entries_sales[0]['sales_amount']
+			commission_percent_wb = {"commission_percent_wb": commission_percent_wb}
+			logistics_percent_wb = logistics[0]['amount_logistics'] / entries_sales[0]['sales_amount']
+			logistics_percent_wb = {"logistics_percent_wb": logistics_percent_wb}
+			storage_percent_wb = storage[0]['cost_storage'] / entries_sales[0]['sales_amount']
+			storage_percent_wb = {"storage_percent_wb": storage_percent_wb}
+			purchase_percent = purchases[0]['amount_purchases'] / entries_sales[0]['sales_amount']
+			purchase_percent = {"purchase_percent": purchase_percent}
+
 			entries = {}
 			entries.update(entries_sales[0])
-			entries.update(entries_logistics[0])
-			entries.update(entries_purchases[0])
+			entries.update(commission_percent_wb)
+			entries.update(logistics[0])
+			entries.update(logistics_percent_wb)
+			entries.update(storage[0])
+			entries.update(storage_percent_wb)
+			entries.update(supplier_remuneration[0])
+			entries.update(calculated_supplier_remuneration)
+			entries.update(purchases[0])
+			entries.update(purchase_percent)
+			entries.update(net_profit)
+			entries.update(net_profit_percent)
+			entries.update(calculated_net_profit)
+			entries.update(calculated_net_profit_percent)
+			entries.update(total_qty[0])
 			for i in all_city:
 				entries.update(i)
 			entries.update({"from_date": date[0]})
@@ -213,82 +208,29 @@ class Analytics(object):
 
 		self.entries = all_entries
 
-	def get_sales_transactions_based_on_customer_or_territory_group(self):
-		if self.filters["value_quantity"] == 'Value':
-			value_field = "base_net_total as value_field"
-		else:
-			value_field = "total_qty as value_field"
-
-		if self.filters.tree_type == 'Customer Group':
-			entity_field = 'customer_group as entity'
-		elif self.filters.tree_type == 'Supplier Group':
-			entity_field = "supplier as entity"
-			self.get_supplier_parent_child_map()
-		else:
-			entity_field = "territory as entity"
-
-		self.entries = frappe.get_all(self.filters.doc_type,
-			fields=[entity_field, value_field, self.date_field],
-			filters={
-				"docstatus": 1,
-				"company": self.filters.company,
-				self.date_field: ('between', [self.filters.from_date, self.filters.to_date])
-			}
-		)
-		self.get_groups()
-
-	def get_sales_transactions_based_on_item_group(self):
-		if self.filters["value_quantity"] == 'Value':
-			value_field = "base_amount"
-		else:
-			value_field = "qty"
-
-		self.entries = frappe.db.sql("""
-			select i.item_group as entity, i.{value_field} as value_field, s.{date_field}
-			from `tab{doctype} Item` i , `tab{doctype}` s
-			where s.name = i.parent and i.docstatus = 1 and s.company = %s
-			and s.{date_field} between %s and %s
-		""".format(date_field=self.date_field, value_field=value_field, doctype=self.filters.doc_type),
-		(self.filters.company, self.filters.from_date, self.filters.to_date), as_dict=1)
-
-		self.get_groups()
-
-	def get_sales_transactions_based_on_project(self):
-		if self.filters["value_quantity"] == 'Value':
-			value_field = "base_net_total as value_field"
-		else:
-			value_field = "total_qty as value_field"
-
-		entity = "project as entity"
-
-		self.entries = frappe.get_all(self.filters.doc_type,
-			fields=[entity, value_field, self.date_field],
-			filters={
-				"docstatus": 1,
-				"company": self.filters.company,
-				"project": ["!=", ""],
-				self.date_field: ('between', [self.filters.from_date, self.filters.to_date])
-			}
-		)
-
 	def get_rows(self):
 		self.data = []
 		self.get_periodic_data()
 
 		string_name = {"sales_amount": _("Sales amount"), "amount_commission_wb": _("Amount commission WB"), 
-				"supplier_remuneration": _("Supplier remuneration"), "total_qty": _("Total qty"), "amount_logistics": _("Minus logistics"), 
-				"amount_purchases": _("Amount purchases"), "koledino": _("Koledino Warehouse"), "podolsk": _("Podolsk Warehouse"), 
+				"amount_logistics": _("Minus logistics"), "cost_storage": _("Minus storage in the warehouse"),
+				"supplier_remuneration": _("Remuneration to the supplier on the report"), 
+				"calculated_supplier_remuneration": _("Calculated remuneration to the supplier"), "amount_purchases": _("Amount purchases"), 
+				"net_profit": _("Net profit on the report"), "calculated_net_profit": _("Calculated net profit"),
+				"total_qty": _("Total qty"), "koledino": _("Koledino Warehouse"), "podolsk": _("Podolsk Warehouse"), 
 				"piter": _("Saint-Petersburg Warehouse"), "kazan": _("Kazan Warehouse"), "yekaterinburg": _("Yekaterinburg Warehouse"),
 				"novosibirsk": _("Novosibirsk Warehouse"), "krasnodar": _("Krasnodar Warehouse"), "pushkino": _("Pushkino Warehouse"),
-				"elektrostal": _("Elektrostal Warehouse"), "domodedovo": _("Domodedovo Warehouse"), "khabarovsk": _("Khabarovsk Warehouse")}
+				"elektrostal": _("Elektrostal Warehouse"), "domodedovo": _("Domodedovo Warehouse"), "khabarovsk": _("Khabarovsk Warehouse"),
+				"commission_percent_wb": _("Commission percent wb"), "logistics_percent_wb": _("Logistics percent"), 
+				"storage_percent_wb": _("Storage percent"), "purchase_percent": _("Purchase percent"), 
+				"net_profit_percent": _("Net profit percent"), "calculated_net_profit_percent": _("Calculated net profit percent"),}
 
 		for entity, period_data in iteritems(self.entity_periodic_data):
 			if entity == 'from_date':
 				continue
-			
+
 			row = {
-				"entity": string_name[entity],
-				"entity_name": None
+				"entity": string_name[entity]
 			}
 			total = 0
 			for date in self.periodic_daterange:
@@ -300,30 +242,6 @@ class Analytics(object):
 			row["total"] = total
 
 			self.data.append(row)
-
-	def get_rows_by_group(self):
-		self.get_periodic_data()
-		out = []
-
-		for d in reversed(self.group_entries):
-			row = {
-				"entity": d.name,
-				"indent": self.depth_map.get(d.name)
-			}
-			total = 0
-			for end_date in self.periodic_daterange:
-				period = self.get_period(end_date)
-				amount = flt(self.entity_periodic_data.get(d.name, {}).get(period, 0.0))
-				row[scrub(period)] = amount
-				if d.parent and (self.filters.tree_type != "Order Type" or d.parent == "Order Types"):
-					self.entity_periodic_data.setdefault(d.parent, frappe._dict()).setdefault(period, 0.0)
-					self.entity_periodic_data[d.parent][period] += amount
-				total += amount
-
-			row["total"] = total
-			out = [row] + out
-
-		self.data = out
 
 	def get_periodic_data(self):
 		self.entity_periodic_data = frappe._dict()
@@ -379,46 +297,6 @@ class Analytics(object):
 			from_date = add_days(period_end_date, 1)
 			if period_end_date == to_date:
 				break
-
-	def get_groups(self):
-		if self.filters.tree_type == "Territory":
-			parent = 'parent_territory'
-		if self.filters.tree_type == "Customer Group":
-			parent = 'parent_customer_group'
-		if self.filters.tree_type == "Item Group":
-			parent = 'parent_item_group'
-		if self.filters.tree_type == "Supplier Group":
-			parent = 'parent_supplier_group'
-
-		self.depth_map = frappe._dict()
-
-		self.group_entries = frappe.db.sql("""select name, lft, rgt , {parent} as parent
-			from `tab{tree}` order by lft"""
-		.format(tree=self.filters.tree_type, parent=parent), as_dict=1)
-
-		for d in self.group_entries:
-			if d.parent:
-				self.depth_map.setdefault(d.name, self.depth_map.get(d.parent) + 1)
-			else:
-				self.depth_map.setdefault(d.name, 0)
-
-	def get_teams(self):
-		self.depth_map = frappe._dict()
-
-		self.group_entries = frappe.db.sql(""" select * from (select "Order Types" as name, 0 as lft,
-			2 as rgt, '' as parent union select distinct order_type as name, 1 as lft, 1 as rgt, "Order Types" as parent
-			from `tab{doctype}` where ifnull(order_type, '') != '') as b order by lft, name
-		"""
-		.format(doctype=self.filters.doc_type), as_dict=1)
-
-		for d in self.group_entries:
-			if d.parent:
-				self.depth_map.setdefault(d.name, self.depth_map.get(d.parent) + 1)
-			else:
-				self.depth_map.setdefault(d.name, 0)
-
-	def get_supplier_parent_child_map(self):
-		self.parent_child_map = frappe._dict(frappe.db.sql(""" select name, supplier_group from `tabSupplier`"""))
 
 	def get_chart_data(self):
 		length = len(self.columns)
