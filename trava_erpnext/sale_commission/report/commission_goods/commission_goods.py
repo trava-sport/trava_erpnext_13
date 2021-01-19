@@ -202,8 +202,7 @@ def get_sales_order_details(filters):
 			JOIN `tabSales Order Item` so_item
 			ON so.name = so_item.parent
 		WHERE
-			so.docstatus = 1 AND so.agreement_type = 'Commission'
-			AND so.docstatus = 1 {0}
+			so.docstatus = 1 AND so.agreement_type = 'Commission' {0}
 		GROUP BY
 			so_item.item_code
 	""".format(conditions_so, conditions_car, conditions_dn), as_dict=1)

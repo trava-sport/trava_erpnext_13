@@ -1,0 +1,70 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "creation": "2021-01-10 22:32:42.940494",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "wb_percentage_remuneration",
+  "category",
+  "subject"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "wb_percentage_remuneration",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Percentage of remuneration WB",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
+  },
+  {
+   "columns": 2,
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Category",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
+  },
+  {
+   "columns": 2,
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Subject",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
+  }
+ ],
+ "links": [],
+ "modified": "2021-01-16 15:07:37.257919",
+ "modified_by": "Administrator",
+ "module": "Trava integrations",
+ "name": "WB Remuneration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1
+}
