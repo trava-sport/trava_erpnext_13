@@ -113,6 +113,11 @@ def create_report(dateFrom, reportType, doc, flag):
 
 def create_report_stocks(report_response):
 	for data in report_response:
+		cost_storage = frappe.db.get_value("WB Deductions", 
+			filters={"subject":data['subject']}, fieldname="cost_storage")
+		if cost_storage == None:
+			cost_storage = 0.03
+		calculate_cost_storage = data['quantityFull'] * cost_storage
 		item = frappe.new_doc("WB Stocks")
 
 		item.last_change_date = datetime.strptime(data['lastChangeDate'], "%Y-%m-%dT%H:%M:%S.%f")
@@ -135,6 +140,7 @@ def create_report_stocks(report_response):
 		item.sccode = data['SCCode']
 		item.price = data['Price']
 		item.discount = data['Discount']
+		item.cost_storage = calculate_cost_storage
 
 		item.insert(ignore_permissions=True)
 

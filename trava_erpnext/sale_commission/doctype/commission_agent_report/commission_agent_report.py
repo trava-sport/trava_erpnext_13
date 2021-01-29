@@ -26,7 +26,7 @@ from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_ban
 from erpnext.accounts.doctype.bank_account.bank_account import get_party_bank_account
 
 class CommissionAgentReport(SellingController):
-	
+
 	def validate(self):
 		self.validate_proj_cust()
 		self.validate_for_items()
@@ -59,7 +59,6 @@ class CommissionAgentReport(SellingController):
 				"compare_fields": [["company", "="]]
 			}
 		})
-
 
 	def update_enquiry_status(self, prevdoc, flag):
 		enq = frappe.db.sql("select t2.prevdoc_docname from `tabQuotation` t1, `tabQuotation Item` t2 where t2.parent = t1.name and t1.name=%s", prevdoc)
@@ -613,9 +612,3 @@ def create_item_price(item_code):
 
 	item_price.item_code = item_code
 	item_price.insert()
-
-@frappe.whitelist()
-def get_wb_settings(name):
-	mws_settings = frappe.get_doc("WB Settings")
-	frappe.db.set_value("Commission Agent Report", name, 'wb_setting_commission', mws_settings.account_commission)
-	frappe.db.commit()

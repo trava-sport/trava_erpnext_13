@@ -89,14 +89,19 @@ trava_erpnext.selling.SellingCommission = erpnext.selling.SellingController.exte
 		let tax_count = this.frm.doc["taxes"] ? this.frm.doc["taxes"].length : 0;
 		let tax = this.frm.doc["taxes"];
 
-		frappe.call({
-			method: "trava_erpnext.sale_commission.doctype.commission_agent_report.commission_agent_report.get_wb_settings",
-			"args": {
-				"name": this.frm.doc.name
-			}
+		frappe.db.get_value("WB Settings", {'name': 'WB Settings'}, "account_commission", (r) => {
+			console.log(r)
+			console.log(r.account_commission)
+			me.frm.doc.wb_setting_commission = r.account_commission;
+			if (r.account_commission === null) {
+				frappe.throw(__("Пожалуйста, укажите комиссию по счету в настройках интеграции с Вайлдберриз."));
+			};
 		});
 
 		let wb_settings = this.frm.doc.wb_setting_commission;
+		if (wb_settings === null) {
+			frappe.throw(__("Пожалуйста, укажите комиссию по счету в настройках интеграции с Вайлдберриз."));
+		}
 		if(tax_count) {
 			for (var prop in tax) {
 				if(tax[prop].account_head === wb_settings) {

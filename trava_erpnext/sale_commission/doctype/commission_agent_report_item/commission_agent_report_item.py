@@ -11,6 +11,3 @@ from erpnext.controllers.print_settings import print_settings_for_item_table
 class CommissionAgentReportItem(Document):
 	def __setup__(self):
 		print_settings_for_item_table(self)
-
-def on_doctype_update():
-	frappe.db.add_index("CommissionAgentReportItem", ["item_code", "warehouse"])
