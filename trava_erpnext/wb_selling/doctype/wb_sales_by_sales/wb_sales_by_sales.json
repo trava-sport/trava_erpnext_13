@@ -41,6 +41,7 @@
   "delivery_amount",
   "return_amount",
   "delivery_rub",
+  "gi_box_type_name",
   "product_discount_for_report",
   "supplier_promo",
   "supplier_spp"
@@ -415,11 +416,20 @@
    "print_hide": 1,
    "read_only": 1,
    "width": "100px"
+  },
+  {
+   "columns": 2,
+   "fieldname": "gi_box_type_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "\u0422\u0438\u043f \u043a\u043e\u0440\u043e\u0431\u043e\u0432",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-01-16 15:11:56.103565",
+ "modified": "2021-01-30 03:24:42.248908",
  "modified_by": "Administrator",
  "module": "WB Selling",
  "name": "WB Sales by Sales",

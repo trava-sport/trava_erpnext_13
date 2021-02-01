@@ -16,7 +16,7 @@ class WBSettings(Document):
 	def validate(self):
 		if self.enable_wb == 1:
 			self.enable_sync = 1
-			setup_custom_fields()
+			#setup_custom_fields()
 		else:
 			self.enable_sync = 0
 

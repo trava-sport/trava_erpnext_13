@@ -379,10 +379,9 @@ def update_status(status, name):
 	so.update_status(status)
 
 @frappe.whitelist()
-def create_report_commission_from_wb_sales_by_sales():
+def schedule_create_report_commission_from_wb_sbs():
 	now = date.today()
-	now = now - timedelta(days=4)
-	nine_days = timedelta(days=9)
+	nine_days = timedelta(days=8)
 	two_days = timedelta(days=2)
 	date_from = now - nine_days
 	date_to = now - two_days

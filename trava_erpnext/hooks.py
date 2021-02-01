@@ -105,12 +105,39 @@ override_doctype_class = {
 #     },
 # }
 
-#"validate": "trava_erpnext.trava_erpnext.doctype.agreement.sales_order.validate",
+#"validate": "trava_erpnext.trava_erpnext.trava_integrations.doctype.wb_settings.sales_order.validate",
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
+	"cron": {
+		"2/30 * * * *": [
+			"trava_erpnext.trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_orders_daily",
+			"trava_erpnext.trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_sales_daily",
+		]
+	},
+	"cron": {
+		"40 6,11,16 * * *": [
+			"trava_erpnext.trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_stocks",
+		]
+	},
+	"cron": {
+		"10 3 4 * *": [
+			"trava_erpnext.trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_orders_monthly",
+			"trava_erpnext.trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_sales_monthly",
+		]
+	},
+	"cron": {
+		"10 3 * * 2": [
+			"trava_erpnext.trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_sales_by_sales",
+		]
+	},
+	"cron": {
+		"10 5 * * 2": [
+			"trava_erpnext.trava_erpnext.sale_commission.doctype.commission_agent_report.commission_agent_report.schedule_create_report_commission_from_wb_sbs",
+		]
+	},
 # 	"all": [
 # 		"trava_erpnext.tasks.all"
 # 	],
