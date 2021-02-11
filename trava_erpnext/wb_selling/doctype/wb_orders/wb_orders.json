@@ -152,7 +152,7 @@
   {
    "columns": 2,
    "fieldname": "income_id",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Delivery number",
    "print_hide": 1,
@@ -172,7 +172,7 @@
   {
    "columns": 2,
    "fieldname": "nmid",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "WB code",
    "print_hide": 1,
@@ -231,7 +231,7 @@
   }
  ],
  "links": [],
- "modified": "2021-01-16 15:11:31.414705",
+ "modified": "2021-02-12 00:05:21.451124",
  "modified_by": "Administrator",
  "module": "WB Selling",
  "name": "WB Orders",

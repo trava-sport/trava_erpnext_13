@@ -50,7 +50,7 @@
   {
    "columns": 2,
    "fieldname": "realizationreport_id",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Report number",
    "print_hide": 1,
@@ -100,7 +100,7 @@
   {
    "columns": 2,
    "fieldname": "gi_id",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Delivery number",
    "print_hide": 1,
@@ -120,7 +120,7 @@
   {
    "columns": 2,
    "fieldname": "nm_id",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Article number",
    "print_hide": 1,
@@ -429,7 +429,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-01-30 03:24:42.248908",
+ "modified": "2021-02-12 00:01:24.088227",
  "modified_by": "Administrator",
  "module": "WB Selling",
  "name": "WB Sales by Sales",

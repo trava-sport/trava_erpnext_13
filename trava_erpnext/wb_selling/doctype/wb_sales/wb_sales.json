@@ -42,7 +42,7 @@
   {
    "columns": 2,
    "fieldname": "number",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Document number",
    "print_hide": 1,
@@ -212,7 +212,7 @@
   {
    "columns": 2,
    "fieldname": "income_id",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Delivery number",
    "print_hide": 1,
@@ -341,7 +341,7 @@
   }
  ],
  "links": [],
- "modified": "2021-01-16 15:08:55.171621",
+ "modified": "2021-02-11 23:58:04.377026",
  "modified_by": "Administrator",
  "module": "WB Selling",
  "name": "WB Sales",
