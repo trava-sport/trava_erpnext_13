@@ -45,6 +45,7 @@ def get_report(dateFrom, reportType, doc, dateTo=None, flag=0, rrd_id=0):
 		elif reportType == 'reportDetailByPeriod':
 			if doc == 'WB Sales by Sales Monthly':
 				deleting_data_in_wb_report(dateFrom, reportType, doc)
+			deleting_data_in_wb_report(dateFrom, reportType, doc)
 			create_report_sales_by_sales(report_response, dateFrom, dateTo, reportType, doc, rrd_id)
 
 def get_reports_instance():
@@ -89,6 +90,7 @@ def deleting_data_in_wb_report(dateFrom, reportType, doc):
 
 	elif reportType in ('reportDetailByPeriod'):
 		frappe.db.sql("""delete from `tabWB Sales by Sales Monthly`""")
+		frappe.db.sql("""delete from `tabWB Sales by Sales`""")
 
 def create_report(dateFrom, reportType, doc, flag):
 	update_date = datetime.strptime(dateFrom, "%Y-%m-%d").date()
