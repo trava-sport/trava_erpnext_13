@@ -58,7 +58,7 @@ class WBSettings(Document):
 			dateFrom = self.date_from
 			dateTo = self.date_to
 			frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-				dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales', timeout=4500)
+				dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales Monthly', timeout=4500)
 
 def schedule_get_order_details():
 	mws_settings = frappe.get_doc("WB Settings")
