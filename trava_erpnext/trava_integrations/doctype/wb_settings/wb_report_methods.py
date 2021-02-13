@@ -28,6 +28,7 @@ from datetime import datetime, timedelta
 #Get and Create Products
 @frappe.whitelist()
 def get_report(dateFrom, reportType, doc, dateTo=None, flag=0, rrd_id=0):
+	frappe.logger("my").info('reportType {0}, dateFrom {1}'.format(reportType, dateFrom))
 	if flag == 1:
 		create_report(dateFrom, reportType, doc, flag)
 	else:
