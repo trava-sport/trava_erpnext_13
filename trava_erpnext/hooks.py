@@ -114,7 +114,7 @@ scheduler_events = {
 	"cron": {
 		"2/30 * * * *": [
 			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_orders_daily",
-			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_sales_daily",
+			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_sales_daily"
 		],
 		"40 6,11,16 * * *": [
 			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_stocks",
@@ -132,6 +132,7 @@ scheduler_events = {
 	},
 # 	"all": [
 # 		"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_orders_daily"
+#		"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_sales_daily",
 # 	],
 # 	"daily": [
 # 		"trava_erpnext.tasks.daily"

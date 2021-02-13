@@ -28,8 +28,7 @@ from datetime import datetime, timedelta
 #Get and Create Products
 @frappe.whitelist()
 def get_report(dateFrom, reportType, doc, dateTo=None, flag=0, rrd_id=0):
-	if flag == '1':
-		flag = 1
+	if flag == 1:
 		create_report(dateFrom, reportType, doc, flag)
 	else:
 		reports = get_reports_instance()
@@ -74,7 +73,7 @@ def call_mws_method(mws_method, *args, **kwargs):
 			method = str(mws_method)
 			method = method[:-27]
 			frappe.log_error(message=e, title=method)
-			print(delay)
+			frappe.logger("my").info('fgh {0}'.format(delay))
 			time.sleep(delay)
 			continue
 
@@ -95,13 +94,13 @@ def create_report(dateFrom, reportType, doc, flag):
 	update_date = datetime.strptime(dateFrom, "%Y-%m-%d").date()
 	date_today = datetime.today().date()
 	while update_date != date_today:
-		print(update_date)
-		print(date_today)
+		frappe.logger("my").info('fgh {0}'.format(update_date))
+		frappe.logger("my").info('fgh {0}'.format(date_today))
 		reports = get_reports_instance()
 
 		report_response = call_mws_method(reports.get_report,reportType=reportType,
 			dateFrom=update_date, flag=flag)
-
+		
 		if reportType == 'orders':
 			deleting_data_in_wb_report(update_date, reportType, doc)
 			create_report_orders(report_response)
@@ -109,7 +108,7 @@ def create_report(dateFrom, reportType, doc, flag):
 			deleting_data_in_wb_report(update_date, reportType, doc)
 			create_report_sales(report_response)
 
-		update_date += timedelta(1)
+		update_date += timedelta(days=1)
 
 def create_report_stocks(report_response):
 	for data in report_response:

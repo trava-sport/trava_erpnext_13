@@ -380,6 +380,9 @@ def update_status(status, name):
 
 @frappe.whitelist()
 def schedule_create_report_commission_from_wb_sbs():
+	frappe.enqueue('create_report_commission_from_wb_sbs', timeout=4500)
+
+def create_report_commission_from_wb_sbs():
 	now = date.today()
 	nine_days = timedelta(days=8)
 	two_days = timedelta(days=2)

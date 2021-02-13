@@ -41,7 +41,7 @@ class WBSettings(Document):
 		if self.enable_wb == 1:
 			dateFrom = self.date_from_orders
 			frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-				reportType='orders', doc='WB Orders', flag=1)
+				reportType='orders', doc='WB Orders', flag=1, timeout=4500)
 
 	def get_report_sales(self):
 		if not self.date_from_sales:
@@ -49,7 +49,7 @@ class WBSettings(Document):
 		if self.enable_wb == 1:
 			dateFrom = self.date_from_sales
 			frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-				reportType='sales', doc='WB Sales', flag=1)
+				reportType='sales', doc='WB Sales', flag=1, timeout=4500)
 
 	def get_report_sales_by_sales(self):
 		if not self.date_from or not self.date_to:
@@ -58,7 +58,7 @@ class WBSettings(Document):
 			dateFrom = self.date_from
 			dateTo = self.date_to
 			frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-				dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales Monthly')
+				dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales Monthly', timeout=4500)
 
 def schedule_get_order_details():
 	mws_settings = frappe.get_doc("WB Settings")
@@ -92,7 +92,7 @@ def schedule_get_report_orders_monthly():
 		thirty_five_days = timedelta(days=35)
 		dateFrom = now - thirty_five_days
 		frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-			reportType='orders', doc='WB Orders', flag=1)
+			reportType='orders', doc='WB Orders', flag=1, timeout=4500)
 
 @frappe.whitelist()
 def schedule_get_report_sales_daily():
@@ -112,7 +112,7 @@ def schedule_get_report_sales_monthly():
 		thirty_five_days = timedelta(days=35)
 		dateFrom = now - thirty_five_days
 		frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-			reportType='sales', doc='WB Sales', flag=1)
+			reportType='sales', doc='WB Sales', flag=1, timeout=4500)
 
 @frappe.whitelist()
 def schedule_get_report_sales_by_sales():
@@ -124,7 +124,7 @@ def schedule_get_report_sales_by_sales():
 		dateFrom = now - eight_days
 		dateTo = now - two_days
 		frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
-			dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales')
+			dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales', timeout=4500)
 
 def setup_custom_fields():
 	custom_fields = {

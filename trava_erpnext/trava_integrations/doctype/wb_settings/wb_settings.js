@@ -45,7 +45,7 @@ frappe.ui.form.on('WB Settings', {
 				method: "trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report",
 				args: {
 					//"dateFrom": frappe.datetime.get_today(),
-					"dateFrom": '2020-10-28',
+					"dateFrom": '2021-02-08',
 					"dateTo": '2021-01-09',
 					"reportType": 'sales',
 					"doc": 'WB Sales',
