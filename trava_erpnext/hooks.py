@@ -112,12 +112,9 @@ override_doctype_class = {
 
 scheduler_events = {
 	"cron": {
-		"2/30 * * * *": [
+		"0/4 * * * *": [
 			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_orders_daily",
 			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_sales_daily"
-		],
-		"0/2 * * * *": [
-			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_stocks",
 		],
 		"40 6,11,16 * * *": [
 			"trava_erpnext.trava_integrations.doctype.wb_settings.wb_settings.schedule_get_report_stocks",
