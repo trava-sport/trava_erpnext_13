@@ -27,9 +27,9 @@ from datetime import datetime, timedelta
 
 #Get and Create Products
 @frappe.whitelist()
-def get_report(dateFrom, reportType, doc, dateTo=None, flag=0, rrd_id=0):
+def get_report(dateFrom, reportType, doc, dateTo=None, flag=0, monthly=False, rrd_id=0):
 	frappe.logger("my").info('reportType {0}, dateFrom {1}'.format(reportType, dateFrom))
-	if flag == 1:
+	if flag == 1 and monthly == True:
 		create_report(dateFrom, reportType, doc, flag)
 	else:
 		reports = get_reports_instance()
@@ -38,10 +38,13 @@ def get_report(dateFrom, reportType, doc, dateTo=None, flag=0, rrd_id=0):
 			dateFrom=dateFrom, dateTo=dateTo, flag=flag, rrd_id=rrd_id)
 
 		if reportType == 'stocks':
+			deleting_data_in_wb_report(dateFrom, reportType, doc)
 			create_report_stocks(report_response)
 		elif reportType == 'orders':
+			deleting_data_in_wb_report(dateFrom, reportType, doc)
 			create_report_orders(report_response)
 		elif reportType == 'sales':
+			deleting_data_in_wb_report(dateFrom, reportType, doc)
 			create_report_sales(report_response)
 		elif reportType == 'reportDetailByPeriod':
 			if doc == 'WB Sales by Sales Monthly':
@@ -84,7 +87,7 @@ def call_mws_method(mws_method, *args, **kwargs):
 	frappe.throw(_("Sync has been temporarily disabled because maximum retries have been exceeded"))
 
 def deleting_data_in_wb_report(dateFrom, reportType, doc):
-	if reportType in ('orders','sales'):
+	if reportType in ('stocks', 'orders','sales'):
 		frappe.db.sql('''delete from `tab{0}` where `last_change_date`="%s"''' # nosec
 			.format(doc) % (dateFrom))
 
@@ -120,7 +123,8 @@ def create_report_stocks(report_response):
 		calculate_cost_storage = data['quantityFull'] * cost_storage
 		item = frappe.new_doc("WB Stocks")
 
-		item.last_change_date = datetime.strptime(data['lastChangeDate'], "%Y-%m-%dT%H:%M:%S.%f")
+		item.last_change_date = data['lastChangeDate']
+		item.last_change_date_and_time = datetime.strptime(data['lastChangeDate'], "%Y-%m-%dT%H:%M:%S.%f")
 		item.supplier_article = data['supplierArticle']
 		item.tech_size = data['techSize']
 		item.barcode = data['barcode']

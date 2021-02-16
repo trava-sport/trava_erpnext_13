@@ -13,7 +13,7 @@ frappe.ui.form.on('WB Settings', {
 				method: "trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report",
 				args: {
 					//"dateFrom": frappe.datetime.get_today(),
-					"dateFrom": '2020-12-01',
+					"dateFrom": '2021-02-16',
 					"reportType": 'orders',
 					"doc": 'WB Orders',
 					"flag": 1
