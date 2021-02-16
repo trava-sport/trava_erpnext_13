@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "last_change_date",
+  "last_change_date_and_time",
   "supplier_article",
   "tech_size",
   "barcode",
@@ -30,7 +31,7 @@
  "fields": [
   {
    "fieldname": "last_change_date",
-   "fieldtype": "Datetime",
+   "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Update date in WB",
    "print_hide": 1,
@@ -198,10 +199,17 @@
    "label": "\u0421\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f \u0432 \u0434\u0435\u043d\u044c",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "last_change_date_and_time",
+   "fieldtype": "Datetime",
+   "label": "Update date and time in WB",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "links": [],
- "modified": "2021-01-29 14:27:22.014864",
+ "modified": "2021-02-16 18:20:59.604519",
  "modified_by": "Administrator",
  "module": "WB Selling",
  "name": "WB Stocks",
