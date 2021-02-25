@@ -8783,7 +8783,7 @@
   "parent": null,
   "parentfield": null,
   "parenttype": null,
-  "prepared_report": 1,
+  "prepared_report": 0,
   "query": null,
   "ref_doctype": "WB Sales by Sales",
   "reference_report": null,
