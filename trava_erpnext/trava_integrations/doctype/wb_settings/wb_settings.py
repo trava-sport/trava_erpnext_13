@@ -11,6 +11,7 @@ from frappe import _
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from erpnext.erpnext_integrations.doctype.amazon_mws_settings.amazon_methods import get_orders
 from trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods import get_report
+from trava_erpnext.sale_commission.doctype.commission_agent_report.commission_agent_report import create_report_commission_from_wb_sbs
 
 class WBSettings(Document):
 	def validate(self):
@@ -59,6 +60,13 @@ class WBSettings(Document):
 			dateTo = self.date_to
 			frappe.enqueue('trava_erpnext.trava_integrations.doctype.wb_settings.wb_report_methods.get_report', dateFrom=dateFrom, 
 				dateTo=dateTo, reportType='reportDetailByPeriod', doc='WB Sales by Sales Monthly', timeout=4500)
+
+	def create_commission_agent_report(self):
+		if not self.date_from_sbs or not self.date_to_sbs:
+			frappe.throw(_("You must specify the date from and to."))
+		dateFrom = datetime.strptime(self.date_from_sbs, '%Y-%m-%d')
+		dateTo = datetime.strptime(self.date_to_sbs, '%Y-%m-%d')
+		create_report_commission_from_wb_sbs(dateFrom, dateTo)
 
 def schedule_get_order_details():
 	mws_settings = frappe.get_doc("WB Settings")

@@ -380,14 +380,14 @@ def update_status(status, name):
 
 @frappe.whitelist()
 def schedule_create_report_commission_from_wb_sbs():
-	frappe.enqueue('create_report_commission_from_wb_sbs', timeout=4500)
-
-def create_report_commission_from_wb_sbs():
 	now = date.today()
 	nine_days = timedelta(days=8)
 	two_days = timedelta(days=2)
 	date_from = now - nine_days
 	date_to = now - two_days
+	frappe.enqueue('create_report_commission_from_wb_sbs', date_from, date_to, timeout=4500)
+
+def create_report_commission_from_wb_sbs(date_from, date_to):
 
 	items = get_report_items(date_from)
 
@@ -397,7 +397,7 @@ def create_report_commission_from_wb_sbs():
 				"customer": frappe.db.get_value("WB Settings", "WB Settings", "customer"),
 				"start_date": date_from,
 				"end_date": date_to,
-				"transaction_date": now,
+				"transaction_date": date.today(),
 				"agreement": frappe.db.get_value("WB Settings", "WB Settings", "agreement"),
 				"items": items,
 				"company": frappe.db.get_value("WB Settings", "WB Settings", "company"),
@@ -445,7 +445,7 @@ def get_report_items(date_from):
 	date = []
 	for i in range(7):
 		date.append(date_from)
-		date_from += timedelta(1)
+		date_from += timedelta(days=1)
 
 	for rr_dt in date:
 		for data in frappe.get_all('WB Sales by Sales', filters={'rr_dt': rr_dt}):

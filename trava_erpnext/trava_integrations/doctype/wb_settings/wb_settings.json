@@ -49,7 +49,12 @@
   "date_from",
   "sync_report_sales_by_sales",
   "column_break_10",
-  "date_to"
+  "date_to",
+  "section_break_17",
+  "date_from_sbs",
+  "create_commission_agent_report",
+  "column_break_12",
+  "date_to_sbs"
  ],
  "fields": [
   {
@@ -329,11 +334,35 @@
    "options": "Account",
    "print_hide": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "date_from_sbs",
+   "fieldtype": "Date",
+   "label": "From date"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_to_sbs",
+   "fieldtype": "Date",
+   "label": "To date"
+  },
+  {
+   "fieldname": "create_commission_agent_report",
+   "fieldtype": "Button",
+   "label": "Create Commission Agent Report",
+   "options": "create_commission_agent_report"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2021-01-29 19:07:50.211449",
+ "modified": "2021-02-25 06:21:13.664860",
  "modified_by": "Administrator",
  "module": "Trava integrations",
  "name": "WB Settings",
